@@ -26,6 +26,9 @@ icons [-o TARGET_PATH] [--baseline BASELINE]
 * baseline(optional) - baseline scale. the default is 3, and it's mean the source image is at @3x scale
 * type(optional) - icon type, the default is icon
 * devices(optional) - including only devices
+* --zip(optional) - put icons into a zip file instead of directory
+
+![screenshot](screenshots/icons.png)
 
 ## destop version
 
