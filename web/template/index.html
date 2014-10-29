@@ -1,0 +1,93 @@
+<!DOCTYPE html>{% autoescape true %}
+<html>
+<title>icons web</title>
+<link rel="shortcut icon" href="static/favicon.ico" type="image/x-icon">
+<link rel="icon" href="static/favicon.ico" type="image/x-icon">
+<script src="static/dropzone.js"></script>
+<style type="text/css">
+body { 
+    background: #ccc;
+    margin: 0;
+    margin-top: 50px;
+    padding: 0;
+}
+div {
+    display: block;
+}
+#contrainer {
+    width: 600px;
+    margin: 0 auto;
+    padding-bottom: 10px;
+    background: #fff;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    border-radius: 10px;
+    border-top: 1px solid #fff;
+}
+h1 {
+    margin: 20px;
+    text-align: center;
+}
+#main {
+    margin: 20px;
+    text-align: center;
+}
+#dropzone {
+    border: 10px dashed #ccc;
+    width: 300px;
+    min-height: 300px;
+    margin: 20px auto;
+}
+#dropzone.dz-drag-hover {
+    border: 10px dashed #0c0;
+}
+#dropzone img {
+    display: block;
+    margin: 10px auto;
+}
+#dropzone p {
+    margin: 10px;
+}
+#footer {
+    text-align: center;
+    color: #ddd;
+}
+</style>
+
+<body>
+    <div id="contrainer">
+        <h1>Drop Icon Below</h1>
+        <div id="main">
+            <form id="dropzone" action="/" method="post"></form>
+            <select id="type">
+                <option value="icon">App Icon</option>
+                <option value="launch">App Lauch Image</option>
+                <option value="toolbar">Toolbar Icon</option>
+                <option value="tab">Tabbar Icon</option>
+                <option value="image">Common</option>
+                <option value="notification">Notification Icon</option>
+                <option value="webclip">Webclip</option>
+            </select>
+            <p id="download" style="text-align: center;"></p>
+            <p>Drag an icon from your computer to the drop zone above to resizes your icon into icons needed for iOS and Android app.</p>
+        </div>
+        <div id="footer">© 2014 exherb.</div>
+    </div>
+    <a href="http://github.com/exherb/icons">
+        <img style="position: absolute; top: 0; left: 0; border: 0;" src="static/forkme.png" alt="Fork me on GitHub">
+    </a>
+    <script type="text/javascript">
+        var dropzone = new Dropzone("form#dropzone", { url: "/", dictDefaultMessage: "", previewTemplate: "<div></div>", acceptedFiles: "image/*"});
+        dropzone.on('sending', function(file, xhr, formData) {
+            document.getElementById('download').innerHTML = 'Preparing...';
+            type = document.getElementById("type").value;
+            formData.append("type", type); 
+        });
+        dropzone.on('complete', function(file) {
+            document.getElementById('download').innerHTML = '<a href="' + file.xhr.response + '">Ready, Download!</a>';
+        });
+    </script>
+</body>
+
+</html>
+{% endautoescape %}
