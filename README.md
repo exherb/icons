@@ -10,7 +10,7 @@ generate icons and config file (e.g. Contents.json) required by app in ios or an
 
 ### install
 
-just run `pip install icons'. if you are using pyenv, then run `pyenv rehash`
+just run `pip install icons`. if you are using pyenv, then run `pyenv rehash`
 
 ### usage
 
