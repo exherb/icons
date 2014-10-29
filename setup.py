@@ -5,7 +5,9 @@ from setuptools import setup
 
 setup(name='icons',
       version='1.0',
-      description='generate icons for devices',
+      description='generate icons and config file (e.g. Contents.json) ' +
+                  'required by app in ios or android, inspired by ' +
+                  'http://makeappicon.com',
       url='http://github.com/exherb/icons',
       author='Herb Brewer',
       author_email='i@4leaf.me',
