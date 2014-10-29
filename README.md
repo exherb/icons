@@ -4,7 +4,7 @@ generate icons and config file (e.g. Contents.json) required by iOS or Android a
 
 ## web version
 
-[iconographys](http://iconographys.appspot.com/)
+[iconographys](http://iconographys.appspot.com/) - http://iconographys.appspot.com/
 
 ## cli version
 
