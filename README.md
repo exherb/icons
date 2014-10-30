@@ -1,12 +1,12 @@
-# icons
+# Icons
 
 generate icons of all sizes and config file (e.g. Contents.json) required by iOS or Android app, inspired by http://makeappicon.com
 
-## web version
+## Web version
 
 [iconographys](http://iconographys.appspot.com/) - http://iconographys.appspot.com/
 
-## cli version
+## CLI version
 
 ### install
 
@@ -30,6 +30,6 @@ icons [-o TARGET_PATH] [--baseline BASELINE]
 
 ![screenshot](screenshots/icons.png)
 
-## destop version
+## Destop version
 
 Working on it...
