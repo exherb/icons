@@ -32,4 +32,4 @@ icons [-o TARGET_PATH] [--baseline BASELINE]
 
 ## Destop version
 
-Working on it...
+* [Download](https://github.com/exherb/icons/releases/tag/1.0-alpha)
