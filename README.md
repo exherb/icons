@@ -32,4 +32,10 @@ icons [-o TARGET_PATH] [--baseline BASELINE]
 
 ## Destop version
 
-* [Download](https://github.com/exherb/icons/releases/tag/1.0-alpha)
+* [Download 1.0alpha](https://github.com/exherb/icons/releases/tag/1.0-alpha)
+
+## TODO
+
+* favicon for web
+* icns for mac
+* ico for windows
