@@ -4,8 +4,7 @@ BrowserWindow = require 'browser-window'
 require('crash-reporter').start()
 
 app.on 'window-all-closed', ->
-    if process.platform != 'darwin'
-        app.quit()
+    app.quit()
 
 app.on 'ready', ->
     width = 300 + 10*2 + 10*2;
@@ -41,7 +40,7 @@ app.on 'ready', ->
         if output_directory
             args.push '-o'
             args.push output_directory
-        icons = spawn('icons', args)
+        icons = spawn(__dirname + '/icons/icons', args)
         icons.stdout.on 'data', (data)->
             console.log 'stdout: ' + data
         icons.stderr.on 'data', (data)->

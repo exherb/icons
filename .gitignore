@@ -82,4 +82,9 @@ target/
 
 *.asar
 
+desktop/node_modules
+desktop/*.js
+
+desktop/icons
 web/icons
+
