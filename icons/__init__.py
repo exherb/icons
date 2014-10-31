@@ -630,7 +630,7 @@ def _main_():
                         help='including devices')
     parser.add_argument('--zip', '-z', action='store_const', const=True)
     args = parser.parse_args()
-    if not args.target_path or os.path.isdir(args.target_path):
+    if not args.target_path:
         args.target_path = os.path.join(os.path.dirname(args.icon_path),
                                         args.icon_type)
     if args.zip:
