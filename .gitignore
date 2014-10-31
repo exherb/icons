@@ -80,5 +80,6 @@ docs/_build/
 # PyBuilder
 target/
 
-web/icons
+*.asar
 
+web/icons
