@@ -635,7 +635,7 @@ def _main_():
                                         args.icon_type)
     if args.zip:
         ext = os.path.splitext(args.target_path)[-1].lower()
-        if ext is not '.zip':
+        if ext != '.zip':
             args.target_path = args.target_path + '.zip'
         if os.path.exists(args.target_path):
             raise RuntimeError('Error: {} is already exists'.
