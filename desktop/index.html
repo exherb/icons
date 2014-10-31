@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<title>Drop Icon Below</title>
+<style type="text/css">
+body {
+    background: #ccc;
+    margin: 10;
+    padding: 0;
+}
+.hidden {
+    display: none;
+}
+#dropzone {
+    border: 10px dashed #666;
+    width: 300px;
+    height: 300px;
+    margin: 0;
+    padding: 0;
+}
+#dropzone.hover {
+    border: 10px dashed #0c0;
+}
+#type {
+    text-align: center;
+    margin: 5px 0px 0 0;
+}
+</style>
+
+<body>
+    <script>
+    document.ondragover = document.ondrop = function(e) {
+        e.preventDefault();
+        return false;
+    };
+    </script>
+    <div id="dropzone"></div>
+    <div id="type">
+        <select>
+            <option value="icon">App Icon</option>
+            <option value="launch">App Lauch Image</option>
+            <option value="toolbar">Toolbar Icon</option>
+            <option value="tab">Tabbar Icon</option>
+            <option value="image">Common</option>
+            <option value="notification">Notification Icon</option>
+            <option value="webclip">Webclip</option>
+        </select>
+        <button id="output">Output: next to original icon</button>
+    </div>
+    <script>
+    var ipc = require('ipc');
+
+    var dropzone = document.getElementById('dropzone')
+    dropzone.ondragover = function() {
+        this.className = 'hover';
+        return false;
+    };
+    dropzone.ondragleave = dropzone.ondragend = function() {
+        this.className = '';
+        return false;
+    };
+    dropzone.ondrop = function(e) {
+        e.preventDefault();
+        var file = e.dataTransfer.files[0];
+        ipc.send('icon-droped', file.path);
+        this.className = '';
+    };
+    var output = document.getElementById('output');
+    output.onclick = function(e) {
+        e.preventDefault();
+        ipc.send('output-setting');
+    };
+    ipc.on('output-seted', function(path) {
+        if (path!= null) {
+            output.innerHTML = 'Output :' + path;
+        } else {
+            output.innerHTML = 'Output: next to original icon'
+        }
+    });
+    </script>
+</body>
+
+</html>

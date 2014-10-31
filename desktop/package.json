@@ -1,0 +1,13 @@
+{
+    "name": "icons",
+    "version": "1.0",
+    "main": "main.js",
+    "licenses": [{
+        "type": "MIT",
+        "url": "http://github.com/atom/atom-shell/raw/master/LICENSE.md"
+    }],
+    "devDependencies": {
+        "atom-package-manager": "0.102.0",
+        "coffee-script": "~1.7.1"
+    }
+}
