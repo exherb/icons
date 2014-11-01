@@ -4,8 +4,26 @@
 <style type="text/css">
 body {
     background: #ccc;
-    margin: 10;
     padding: 0;
+    margin: 0;
+    display: table;
+    position: absolute;
+    height: 100%;
+    width: 100%;
+}
+.container {
+    display: table-cell;
+    vertical-align: middle;
+}
+.controls {
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0;
+    width: 320px;
+}
+.control {
+    margin: 5px 0 0 0;
+    width: 100%;
 }
 .hidden {
     display: none;
@@ -14,15 +32,12 @@ body {
     border: 10px dashed #666;
     width: 300px;
     height: 300px;
-    margin: 0;
+    margin-left: auto;
+    margin-right: auto;
     padding: 0;
 }
 #dropzone.hover {
     border: 10px dashed #0c0;
-}
-#type {
-    text-align: center;
-    margin: 5px 0px 0 0;
 }
 </style>
 
@@ -33,23 +48,28 @@ body {
         return false;
     };
     </script>
-    <div id="dropzone"></div>
-    <div id="type">
-        <select>
-            <option value="icon">App Icon</option>
-            <option value="launch">App Lauch Image</option>
-            <option value="toolbar">Toolbar Icon</option>
-            <option value="tab">Tabbar Icon</option>
-            <option value="image">Common</option>
-            <option value="notification">Notification Icon</option>
-            <option value="webclip">Webclip</option>
-        </select>
-        <button id="output">Output: next to original icon</button>
+    <div class="container">
+        <div id="dropzone">
+            <img id="droped_image" src="" width="300px" height="300px" />
+        </div>
+        <div class="controls">
+            <select class="control">
+                <option value="icon">App Icon</option>
+                <option value="launch">App Lauch Image</option>
+                <option value="toolbar">Toolbar Icon</option>
+                <option value="tab">Tabbar Icon</option>
+                <option value="image">Common</option>
+                <option value="notification">Notification Icon</option>
+                <option value="webclip">Webclip</option>
+            </select>
+            <button id="output" class="control">Output: next to original icon</button>
+        </div>
     </div>
     <script>
     var ipc = require('ipc');
 
     var dropzone = document.getElementById('dropzone')
+    var droped_image = document.getElementById('droped_image')
     dropzone.ondragover = function() {
         this.className = 'hover';
         return false;
@@ -61,14 +81,21 @@ body {
     dropzone.ondrop = function(e) {
         e.preventDefault();
         var file = e.dataTransfer.files[0];
-        ipc.send('icon-droped', file.path);
+        var ext = file.path.split('.').pop().toLowerCase();
+        if (ext !== 'png' && ext !== 'jpg' && ext !== 'jpeg' && ext !== 'bmp') {
+            return;
+        }
+        droped_image.src = file.path
         this.className = '';
+        ipc.send('icon-droped', file.path);
     };
-    var output = document.getElementById('output');
-    output.onclick = function(e) {
+    function setting_output(e) {
         e.preventDefault();
         ipc.send('output-setting');
     };
+    dropzone.onclick = setting_output;
+    var output = document.getElementById('output');
+    output.onclick = setting_output;
     ipc.on('output-seted', function(path) {
         if (path!= null) {
             output.innerHTML = 'Output :' + path;

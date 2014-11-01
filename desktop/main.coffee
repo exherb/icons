@@ -7,7 +7,7 @@ app.on 'window-all-closed', ->
     app.quit()
 
 app.on 'ready', ->
-    width = 300 + 10*2 + 10*2;
+    width = 300 + 10*2 + 10*2 + 20;
     height = width + 5 + 50
     mainWindow = new BrowserWindow
         width: width
@@ -18,8 +18,12 @@ app.on 'ready', ->
 
     dialog = require 'dialog'
     ipc = require 'ipc'
+    is_setting_output = false
     output_directory = null
     ipc.on 'output-setting', ()->
+        if is_setting_output
+            return
+        is_setting_output = true
         dialog.showOpenDialog
             title: 'Choose output directory'
             properties: [ 'openDirectory']
@@ -29,12 +33,10 @@ app.on 'ready', ->
             else
                 output_directory = null
             mainWindow.webContents.send 'output-seted', output_directory
+            is_setting_output = false
 
 
     ipc.on 'icon-droped', (event, path)->
-        ext = path.split('.').pop().toLowerCase()
-        if ext not in ['png', 'jpg', 'jpeg', 'bmp']
-            return
         spawn = require('child_process').spawn
         args = [path]
         if output_directory
