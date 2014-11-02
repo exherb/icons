@@ -53,7 +53,7 @@ body {
             <img id="droped_image" src="" width="300px" height="300px" />
         </div>
         <div class="controls">
-            <select class="control">
+            <select class="control" id="type">
                 <option value="icon">App Icon</option>
                 <option value="launch">App Lauch Image</option>
                 <option value="toolbar">Toolbar Icon</option>
@@ -67,10 +67,15 @@ body {
     </div>
     <script>
     var ipc = require('ipc');
+    var remote = require('remote');
 
     var dropzone = document.getElementById('dropzone')
     var droped_image = document.getElementById('droped_image')
+    var type = document.getElementById('type')
     dropzone.ondragover = function() {
+        if(remote.getGlobal('is_generating')) {
+            return ;
+        }
         this.className = 'hover';
         return false;
     };
@@ -80,6 +85,9 @@ body {
     };
     dropzone.ondrop = function(e) {
         e.preventDefault();
+        if(remote.getGlobal('is_generating')) {
+            return ;
+        }
         var file = e.dataTransfer.files[0];
         var ext = file.path.split('.').pop().toLowerCase();
         if (ext !== 'png' && ext !== 'jpg' && ext !== 'jpeg' && ext !== 'bmp') {
@@ -87,15 +95,28 @@ body {
         }
         droped_image.src = file.path
         this.className = '';
-        ipc.send('icon-droped', file.path);
+        ipc.send('icon-droped', file.path, type.value);
     };
-    function setting_output(e) {
+    dropzone.onclick = function(e) {
         e.preventDefault();
-        ipc.send('output-setting');
+        if(remote.getGlobal('is_generating')) {
+            return ;
+        }
+        ipc.send('icon-selecting');
     };
-    dropzone.onclick = setting_output;
+    ipc.on('icon-seted', function(icon) {
+        droped_image.src = icon
+        dropzone.className = '';
+        ipc.send('icon-droped', icon, type.value);
+    });
     var output = document.getElementById('output');
-    output.onclick = setting_output;
+    output.onclick = function(e) {
+        e.preventDefault();
+        if(remote.getGlobal('is_generating')) {
+            return ;
+        }
+        ipc.send('output-setting');
+    };;
     ipc.on('output-seted', function(path) {
         if (path!= null) {
             output.innerHTML = 'Output :' + path;
