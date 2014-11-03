@@ -4,7 +4,10 @@
 import os
 import json
 from zipfile import ZipFile
-import StringIO
+try:
+    from io import BytesIO
+except ImportError:
+    from cStringIO import StringIO as BytesIO
 
 from PIL import Image
 
@@ -20,7 +23,7 @@ def _resize_image_(image, to_object, to_path, to_size):
         temp = image.copy()
         temp.thumbnail(to_size, Image.ANTIALIAS)
     if isinstance(to_object, ZipFile):
-        f = StringIO.StringIO()
+        f = BytesIO()
         temp.save(f, _image_format_[0])
         f.seek(0)
         to_object.writestr(to_path, f.read())
@@ -620,13 +623,13 @@ def _main_():
                         type=int,
                         help='icon scale baseline')
     parser.add_argument('--type', '-t', default='icon',
-                        choices=_sizes_.keys(),
+                        choices=supported_types(),
                         dest='icon_type',
                         help='icon type')
     parser.add_argument('--devices', '-d',
-                        default=['ios', 'android'],
+                        default=supported_devices(),
                         nargs='+',
-                        choices=['ios', 'android'],
+                        choices=supported_devices(),
                         help='including devices')
     parser.add_argument('--zip', '-z', action='store_const', const=True)
     args = parser.parse_args()

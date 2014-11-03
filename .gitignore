@@ -83,9 +83,3 @@ target/
 *.asar
 
 web/icons
-
-desktop/node_modules
-desktop/*.js
-desktop/resources/mac/Icons.app
-desktop/resources/windows/Icons
-
