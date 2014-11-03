@@ -10,7 +10,7 @@ generate icons of all sizes and config file (e.g. Contents.json) required by iOS
 
 ### install
 
-just run `pip install icons`. if you are using pyenv, then run `pyenv rehash`
+just type `pip install icons` in your term.
 
 ### usage
 
@@ -32,7 +32,11 @@ icons [-o TARGET_PATH] [--baseline BASELINE]
 
 ## Destop version
 
-* [Download 1.0alpha](https://github.com/exherb/icons/releases/tag/1.0-alpha)
+if you already install icons, then type 'icons_gui' in your term you will see.
+
+![screenshot](screenshots/icons_gui.png)
+
+### Download
 
 ## TODO
 

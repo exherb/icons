@@ -13,7 +13,7 @@ try:
     from tkinter import filedialog
 except ImportError:
     import Tkinter as tk
-    from Tkinter import ttk
+    import ttk
     import tkFileDialog as filedialog
 from collections import deque
 from PIL import Image
@@ -24,10 +24,10 @@ _target_path_ = ''
 
 
 def _show_in_finder_(target_path):
-    if sys.platform == "win32":
+    if sys.platform == 'win32':
         os.startfile(target_path)
     else:
-        opener = "open" if sys.platform == "darwin" else "xdg-open"
+        opener = 'open' if sys.platform == 'darwin' else 'xdg-open'
         subprocess.call([opener, target_path])
 
 
@@ -35,11 +35,15 @@ def _main_():
     background_color = '#e9e9e9'
 
     window = tk.Tk()
+    window.resizable(0, 0)
     window.title('Drop Icon Below')
     screenwidth = window.winfo_screenwidth()
     screenheight = window.winfo_screenheight()
     width = 505
-    height = 380
+    if sys.platform == 'win32':
+        height = 410
+    else:
+        height = 380
     x = (screenwidth - width)*0.5
     y = (screenheight - height)*0.5
     window.geometry('{}x{}+{}+{}'.format(width, height, int(x), int(y)))
@@ -109,10 +113,18 @@ def _main_():
 
     class Progressbar(ttk.Progressbar):
         def __init__(self, *args, **kwargs):
-            super(Progressbar, self).__init__(*args, **kwargs)
+            ttk.Progressbar.__init__(self, *args, **kwargs)
             self.tasks = deque()
             self.pending_task = None
             self.callback = None
+            self.hide()
+
+        def show(self):
+            self.grid(row=3, column=0, columnspan=2,
+                      sticky='we')
+
+        def hide(self):
+            self.grid_forget()
 
         def add_task(self, target, args):
             task = Task(target=target, args=args,
@@ -124,7 +136,8 @@ def _main_():
             self._check_()
             self.pending_task = self.tasks.pop()
             self.pending_task.start()
-            super(Progressbar, self).start()
+            self.show()
+            ttk.Progressbar.start(self)
 
         @property
         def is_running(self):
@@ -141,13 +154,12 @@ def _main_():
             if self.is_running:
                 self.after(1000, self._check_)
                 return
+            self.hide()
             self.stop()
             if self.callback:
                 self.callback()
 
-    progressbar = Progressbar(frame, mode='indeterminate')
-    progressbar.grid(row=3, column=0, columnspan=2,
-                     sticky='we')
+    progressbar = Progressbar(frame, orient='horizontal', mode='indeterminate')
 
     def onSelectIcon(event):
         if progressbar.is_running:
@@ -190,6 +202,7 @@ def _main_():
             progressbar.start(callback)
     drop_button.bind('<ButtonRelease-1>', onSelectIcon)
 
+    window.lift()
     window.mainloop()
 
 if __name__ == '__main__':
