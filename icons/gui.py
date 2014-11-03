@@ -160,10 +160,14 @@ def _main_():
                 self.callback()
 
     progressbar = Progressbar(frame, orient='horizontal', mode='indeterminate')
+    drop_button.is_picking_file = False
 
     def onSelectIcon(event):
         if progressbar.is_running:
             return
+        if drop_button.is_picking_file:
+            return
+        drop_button.is_picking_file = True
         dialog = filedialog.\
             Open(event.widget,
                  filetypes=[('Images', '.png .jpg .jpeg .bmp')])
@@ -200,6 +204,7 @@ def _main_():
             def callback():
                 _show_in_finder_(target_path)
             progressbar.start(callback)
+        drop_button.is_picking_file = False
     drop_button.bind('<ButtonRelease-1>', onSelectIcon)
 
     window.lift()

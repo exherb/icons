@@ -38,6 +38,8 @@ if you already install icons, then type 'icons_gui' in your term you will see.
 
 ### Download
 
+* [1.0.0 Alpha](https://github.com/exherb/icons/releases/tag/1.0.0-alpha)
+
 ## TODO
 
 * favicon for web

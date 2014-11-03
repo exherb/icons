@@ -4,7 +4,7 @@
 from setuptools import setup
 
 setup(name='icons',
-      version='1.1',
+      version='1.0.0',
       description='generate icons of all sizes and config file ' +
                   '(e.g. Contents.json) required by iOS or Android app, ' +
                   'inspired by http://makeappicon.com',
