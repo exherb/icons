@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-from setuptools import setup
+from setuptools import setup, find_packages
+
 
 setup(name='icons',
       version='1.0.0',
@@ -12,7 +13,8 @@ setup(name='icons',
       author='Herb Brewer',
       author_email='i@4leaf.me',
       license='MIT',
-      packages=['icons'],
+      packages=find_packages(),
+      include_package_data=True,
       install_requires=['pillow>=2.6.1'],
       keywords='icon ios android',
       entry_points={'console_scripts': ['icons = icons:_main_'],

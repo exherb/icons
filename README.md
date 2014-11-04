@@ -38,8 +38,6 @@ icons [-o TARGET_PATH] [--baseline BASELINE]
 
 * [1.0.0 Alpha](https://github.com/exherb/icons/releases/tag/1.0.0-alpha)
 
-if you already install icons, then type 'icons_gui' in your term you will see.
-
 ## TODO
 
 * favicon for web

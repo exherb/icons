@@ -3,6 +3,7 @@
 
 import sys
 import os
+from glob import glob
 from setuptools import setup
 
 mainscript = 'icons/gui.py'
@@ -26,12 +27,18 @@ elif sys.platform == 'win32':
     extra_options = dict(
         setup_requires=['py2exe'],
         windows=[{'script': mainscript,
-                  'icon_resources': [(0, 'images/icon.ico')]}]
+                  'icon_resources': [(0, 'images/icon.ico')]}],
+        bundle_files=2
     )
 setup(
     name=name,
+    data_files=[('tkdnd/{}'.format(sys.platform),
+                glob('icons/tkdnd/{}/*'.format(sys.platform)))],
     **extra_options
 )
 
 if sys.platform == 'win32':
-    os.rename('dist/gui.exe', 'dist/{}.exe'.format(name))
+    target = 'dist/{}.exe'.format(name)
+    if os.path.exists(target):
+        os.remove(target)
+    os.rename('dist/gui.exe', target)

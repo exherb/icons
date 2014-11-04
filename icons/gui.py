@@ -21,6 +21,100 @@ from PIL import Image
 from icons import make_images
 
 
+def _load_tkdnd(master):
+    if sys.platform == 'win32':
+        basis = sys.executable
+    else:
+        basis = __file__
+    tkdndlib = os.path.join(os.path.dirname(basis), 'tkdnd', sys.platform)
+    tkdndlib = os.environ.get('TKDND_LIBRARY', tkdndlib)
+    if tkdndlib:
+        master.tk.eval('global auto_path; lappend auto_path {%s}' % tkdndlib)
+    master.tk.eval('package require tkdnd')
+    master._tkdnd_loaded = True
+
+
+class TkDND(object):
+    def __init__(self, master):
+        if not getattr(master, '_tkdnd_loaded', False):
+            _load_tkdnd(master)
+        self.master = master
+        self.tk = master.tk
+
+    def bindtarget(self, window, callback, dndtype, event='<Drop>',
+                   priority=50):
+        cmd = self._prepare_tkdnd_func(callback)
+        return self.tk.call('dnd', 'bindtarget', window, dndtype, event,
+                            cmd, priority)
+
+    def bindtarget_query(self, window, dndtype=None, event='<Drop>'):
+        return self.tk.call('dnd', 'bindtarget', window, dndtype, event)
+
+    def cleartarget(self, window):
+        self.tk.call('dnd', 'cleartarget', window)
+
+    def bindsource(self, window, callback, dndtype, priority=50):
+        cmd = self._prepare_tkdnd_func(callback)
+        self.tk.call('dnd', 'bindsource', window, dndtype, cmd, priority)
+
+    def bindsource_query(self, window, dndtype=None):
+        return self.tk.call('dnd', 'bindsource', window, dndtype)
+
+    def clearsource(self, window):
+        self.tk.call('dnd', 'clearsource', window)
+
+    def drag(self, window, actions=None, descriptions=None,
+             cursorwin=None, callback=None):
+        cmd = None
+        if cursorwin is not None:
+            if callback is not None:
+                cmd = self._prepare_tkdnd_func(callback)
+        self.tk.call('dnd', 'drag', window, actions, descriptions,
+                     cursorwin, cmd)
+
+    _subst_format = ('%A', '%a', '%b', '%D', '%d', '%m', '%T',
+                     '%W', '%X', '%Y', '%x', '%y')
+    _subst_format_str = " ".join(_subst_format)
+
+    def _prepare_tkdnd_func(self, callback):
+        funcid = self.master.register(callback, self._dndsubstitute)
+        cmd = ('%s %s' % (funcid, self._subst_format_str))
+        return cmd
+
+    def _dndsubstitute(self, *args):
+        if len(args) != len(self._subst_format):
+            return args
+
+        def try_int(x):
+            x = str(x)
+            try:
+                return int(x)
+            except ValueError:
+                return x
+
+        A, a, b, D, d, m, T, W, X, Y, x, y = args
+
+        event = tk.Event()
+        event.action = A
+        event.action_list = a
+        event.mouse_button = b
+        event.data = D
+        event.descr = d
+        event.modifier = m
+        event.dndtype = T
+        event.widget = self.master.nametowidget(W)
+        event.x_root = X
+        event.y_root = Y
+        event.x = x
+        event.y = y
+
+        event.action_list = str(event.action_list).split()
+        for name in ('mouse_button', 'x', 'y', 'x_root', 'y_root'):
+            setattr(event, name, try_int(getattr(event, name)))
+
+        return (event, )
+
+
 def _show_in_finder_(target_path):
     if sys.platform == 'win32':
         os.startfile(target_path)
@@ -187,9 +281,15 @@ def _main_():
         if window.is_picking_file:
             return
         window.is_picking_file = True
-        icon_path = filedialog.\
-            askopenfilename(title='Select your icon',
-                            filetypes=[('Images', '.png .jpg .jpeg .bmp')])
+        if hasattr(event, 'data'):
+            icon_path = event.data.split()[0]
+            _, ext = os.path.splitext(icon_path)
+            if ext.lower() not in ['.png', '.jpg', '.jpeg', '.bmp']:
+                return
+        else:
+            icon_path = filedialog.\
+                askopenfilename(title='Select your icon',
+                                filetypes=[('Images', '.png .jpg .jpeg .bmp')])
         if icon_path:
             try:
                 image = Image.open(icon_path)
@@ -220,6 +320,8 @@ def _main_():
             progressbar.start(callback)
         window.is_picking_file = False
     drop_button.bind('<ButtonRelease-1>', on_select_icon)
+    dnd = TkDND(window)
+    dnd.bindtarget(drop_button, on_select_icon, 'text/uri-list')
 
     window.lift()
     window.mainloop()
