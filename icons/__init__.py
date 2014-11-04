@@ -32,10 +32,25 @@ def _resize_image_(image, to_object, to_path, to_size):
             temp.save(f, _image_format_[0])
     del temp
 
-_contents_ = {'imageset': [{'idiom': 'universal', 'scale': '1x'},
+_configs_ = {'favicon': '''<head>
+    <link rel="icon" type="image/png" sizes="196x196" href="/favicon-196.png">
+    <link rel="icon" type="image/png" sizes="160x160" href="/favicon-160.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png">
+    <link rel="icon" type="image/png" sizes="64x64" href="/favicon-64.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/favicon-76@2x.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/favicon-76.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicon-60@3x.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/favicon-60@2x.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/favicon-60.png">
+    <link rel="apple-touch-icon" href="/favicon-60.png">
+</head>
+''',
+             '.imageset': [{'idiom': 'universal', 'scale': '1x'},
                            {'idiom': 'universal', 'scale': '2x'},
                            {'idiom': 'universal', 'scale': '3x'}],
-              'appiconset': [{'idiom': 'iphone', 'scale': '1x',
+             '.appiconset': [{'idiom': 'iphone', 'scale': '1x',
                               'size': '29x29'},
                              {'idiom': 'iphone', 'scale': '2x',
                               'size': '29x29'},
@@ -75,7 +90,7 @@ _contents_ = {'imageset': [{'idiom': 'universal', 'scale': '1x'},
                               'size': '76x76'},
                              {'idiom': 'car', 'scale': '1x',
                               'size': '120x120'}],
-              'launchimage': [{'scale': '3x',
+             '.launchimage': [{'scale': '3x',
                                'orientation': 'portrait',
                                'subtype': '736h',
                                'minimum-system-version': '8.0',
@@ -171,139 +186,153 @@ _contents_ = {'imageset': [{'idiom': 'universal', 'scale': '1x'},
                                'extent': 'full-screen'}]}
 
 
-def _modify_content_json_(type, all_contents, image_path, lookfor_image_size,
-                          lookfor_image_scale,
-                          lookfor_system_version=None):
+def _modify_config_file_(type, all_contents, image_path, lookfor_image_size,
+                         lookfor_image_scale,
+                         lookfor_system_version=None):
     image_dir = os.path.dirname(image_path)
     image_name = os.path.basename(image_path)
-    contents_json_path = os.path.join(image_dir, 'Contents.json')
-    contents = {'images': []}
-    if contents_json_path in all_contents:
-        contents = all_contents[contents_json_path]
-    images = contents.get('images', None)
-    if images is None or not isinstance(images, list):
-        images = []
-        contents['images'] = images
-    source_contents = _contents_[type]
-    matched_image = None
-    if type == 'imageset':
-        def find_image(image_contents, expected_image_scale):
-            for image_content in image_contents:
-                image_scale = image_content.get('scale', '1x')
-                image_scale = image_scale.lower().rstrip('x')
-                if not image_scale or\
-                   not image_scale.isdigit():
-                    continue
-                image_scale = int(image_scale)
-                if image_scale == expected_image_scale:
-                    return image_content
-            return None
-        matched_image = find_image(images, lookfor_image_scale)
-        if matched_image is None:
-            matched_image = find_image(source_contents, lookfor_image_scale)
-            images.append(matched_image)
-    elif type == 'appiconset':
-        def find_image(image_contents, expected_image_size,
-                       expected_image_scale):
-            for image_content in image_contents:
-                image_scale = image_content.get('scale', '1x')
-                image_scale = image_scale.lower().rstrip('x')
-                image_size = image_content.get('size', None)
-                if not image_scale or not image_size or\
-                   not image_scale.isdigit():
-                    continue
-                image_scale = int(image_scale)
-                image_size = [int(x) for x in image_size.split('x', 1)
-                              if x.isdigit()]
-                if len(image_size) != 2:
-                    continue
-                if image_size[0] == expected_image_size[0] and\
-                   image_scale == expected_image_scale:
-                    return image_content
-            return None
-        matched_image = find_image(images, lookfor_image_size,
-                                   lookfor_image_scale)
-        if matched_image is None:
-            matched_image = find_image(source_contents, lookfor_image_size,
+    source_contents = _configs_[type]
+
+    if type == 'favicon':
+        contents_json_path = os.path.join(image_dir, 'configs.txt')
+        if contents_json_path in all_contents:
+            return
+        contents = source_contents
+    else:
+        contents_json_path = os.path.join(image_dir, 'Contents.json')
+        if contents_json_path in all_contents:
+            contents = all_contents[contents_json_path]
+        else:
+            contents = {'images': []}
+        images = contents.get('images', None)
+        if images is None or not isinstance(images, list):
+            images = []
+            contents['images'] = images
+        matched_image = None
+        if type == '.imageset':
+            def find_image(image_contents, expected_image_scale):
+                for image_content in image_contents:
+                    image_scale = image_content.get('scale', '1x')
+                    image_scale = image_scale.lower().rstrip('x')
+                    if not image_scale or\
+                       not image_scale.isdigit():
+                        continue
+                    image_scale = int(image_scale)
+                    if image_scale == expected_image_scale:
+                        return image_content
+                return None
+            matched_image = find_image(images, lookfor_image_scale)
+            if matched_image is None:
+                matched_image = find_image(source_contents,
+                                           lookfor_image_scale)
+                images.append(matched_image)
+        elif type == '.appiconset':
+            def find_image(image_contents, expected_image_size,
+                           expected_image_scale):
+                for image_content in image_contents:
+                    image_scale = image_content.get('scale', '1x')
+                    image_scale = image_scale.lower().rstrip('x')
+                    image_size = image_content.get('size', None)
+                    if not image_scale or not image_size or\
+                       not image_scale.isdigit():
+                        continue
+                    image_scale = int(image_scale)
+                    image_size = [int(x) for x in image_size.split('x', 1)
+                                  if x.isdigit()]
+                    if len(image_size) != 2:
+                        continue
+                    if image_size[0] == expected_image_size[0] and\
+                       image_scale == expected_image_scale:
+                        return image_content
+                return None
+            matched_image = find_image(images, lookfor_image_size,
                                        lookfor_image_scale)
-            images.append(matched_image)
-    elif type == 'launchimage':
-        def find_image(image_contents, expected_image_size,
-                       expected_image_scale,
-                       expected_system_version):
-            for image_content in image_contents:
-                image_scale = image_content.get('scale', '1x')
-                image_scale = image_scale.lower().rstrip('x')
-                image_idiom = image_content.get('idiom', '').lower()
-                image_orientation = image_content.get('orientation', '').\
-                    lower()
-                image_extent = image_content.get('extent', '').lower()
-                if not image_scale or not image_idiom or\
-                   not image_scale.isdigit() or\
-                   not image_extent or not image_orientation:
-                    continue
-                image_scale = int(image_scale)
-                if image_idiom == 'ipad':
-                    if image_orientation == 'portrait':
-                        if image_extent == 'to-status-bar':
-                            image_size = (768, 1004)
-                        else:
-                            image_size = (768, 1024)
-                    elif image_orientation == 'landscape':
-                        if image_extent == 'to-status-bar':
-                            image_size = (1024, 748)
-                        else:
-                            image_size = (1024, 768)
-                elif image_idiom == 'iphone':
-                    image_subtype = image_content.get('subtype', '').lower()
-                    if image_orientation == 'portrait':
-                        if image_subtype == '736h':
-                            image_size = (1242/3.0, 2208/3.0)
-                        elif image_subtype == '667h':
-                            image_size = (750/2.0, 1334/2.0)
-                        elif image_subtype == 'retina4':
-                            image_size = (640*0.5, 1136*0.5)
-                        else:
-                            image_size = (320, 480)
-                    elif image_orientation == 'landscape':
-                        if image_subtype == '736h':
-                            image_size = (2208/3.0, 1242/3.0)
-                        else:
-                            continue
-                if image_size != expected_image_size or\
-                   image_scale != expected_image_scale:
-                    continue
-                minimum_system_version = image_content.\
-                    get('minimum-system-version', '0')
-                if minimum_system_version.isdigit():
-                    minimum_system_version = float(minimum_system_version)
-                else:
-                    minimum_system_version = 0
-                if minimum_system_version and\
-                   expected_system_version >= minimum_system_version:
-                    continue
-                return image_content
-            return None
-        matched_image = find_image(images, lookfor_image_size,
-                                   lookfor_image_scale,
-                                   lookfor_system_version)
-        if matched_image is None:
-            matched_image = find_image(source_contents,
-                                       lookfor_image_size,
+            if matched_image is None:
+                matched_image = find_image(source_contents, lookfor_image_size,
+                                           lookfor_image_scale)
+                images.append(matched_image)
+        elif type == '.launchimage':
+            def find_image(image_contents, expected_image_size,
+                           expected_image_scale,
+                           expected_system_version):
+                for image_content in image_contents:
+                    image_scale = image_content.get('scale', '1x')
+                    image_scale = image_scale.lower().rstrip('x')
+                    image_idiom = image_content.get('idiom', '').lower()
+                    image_orientation = image_content.get('orientation', '').\
+                        lower()
+                    image_extent = image_content.get('extent', '').lower()
+                    if not image_scale or not image_idiom or\
+                       not image_scale.isdigit() or\
+                       not image_extent or not image_orientation:
+                        continue
+                    image_scale = int(image_scale)
+                    if image_idiom == 'ipad':
+                        if image_orientation == 'portrait':
+                            if image_extent == 'to-status-bar':
+                                image_size = (768, 1004)
+                            else:
+                                image_size = (768, 1024)
+                        elif image_orientation == 'landscape':
+                            if image_extent == 'to-status-bar':
+                                image_size = (1024, 748)
+                            else:
+                                image_size = (1024, 768)
+                    elif image_idiom == 'iphone':
+                        image_subtype = image_content.get('subtype',
+                                                          '').lower()
+                        if image_orientation == 'portrait':
+                            if image_subtype == '736h':
+                                image_size = (1242/3.0, 2208/3.0)
+                            elif image_subtype == '667h':
+                                image_size = (750/2.0, 1334/2.0)
+                            elif image_subtype == 'retina4':
+                                image_size = (640*0.5, 1136*0.5)
+                            else:
+                                image_size = (320, 480)
+                        elif image_orientation == 'landscape':
+                            if image_subtype == '736h':
+                                image_size = (2208/3.0, 1242/3.0)
+                            else:
+                                continue
+                    if image_size != expected_image_size or\
+                       image_scale != expected_image_scale:
+                        continue
+                    minimum_system_version = image_content.\
+                        get('minimum-system-version', '0')
+                    if minimum_system_version.isdigit():
+                        minimum_system_version = float(minimum_system_version)
+                    else:
+                        minimum_system_version = 0
+                    if minimum_system_version and\
+                       expected_system_version >= minimum_system_version:
+                        continue
+                    return image_content
+                return None
+            matched_image = find_image(images, lookfor_image_size,
                                        lookfor_image_scale,
                                        lookfor_system_version)
-            images.append(matched_image)
-    matched_image['filename'] = image_name
-    contents['info'] = {'version': 1, 'author': 'icons'}
+            if matched_image is None:
+                matched_image = find_image(source_contents,
+                                           lookfor_image_size,
+                                           lookfor_image_scale,
+                                           lookfor_system_version)
+                images.append(matched_image)
+        matched_image['filename'] = image_name
+        contents['info'] = {'version': 1, 'author': 'icons'}
+
     all_contents[contents_json_path] = contents
 
 
-def _save_contents_(to_object, contents):
+def _save_configs_(to_object, contents):
     for path, value in contents.items():
+        if isinstance(value, dict) or isinstance(value, list):
+            value = json.dumps(value)
         if isinstance(to_object, ZipFile):
-            to_object.writestr(path, json.dumps(value))
+            to_object.writestr(path, value)
         else:
-            json.dump(value, open(path, 'w'))
+            with open(path, 'w') as f:
+                f.write(value)
 
 
 _sizes_ = {'icon': {'ios': {'AppIcon.appiconset/Icon-29': (29, 29, 1),
@@ -476,10 +505,17 @@ _sizes_ = {'icon': {'ios': {'AppIcon.appiconset/Icon-29': (29, 29, 1),
                                         (22, 22, 3),
                                         'drawable-xxxhdpi/{filename}':
                                         (22, 22, 4)}},
-           'webclip': {'universal': {'Icon-76': (76, 76, 1),
-                                     'Icon-76@2x': (76, 76, 2),
-                                     'Icon-60@2x': (60, 60, 2),
-                                     'Icon-60@3x': (60, 60, 3)}},
+           'favicon': {'universal': {'favicon-60': (60, 60, 1),
+                                     'favicon-60@2x': (60, 60, 2),
+                                     'favicon-60@3x': (60, 60, 3),
+                                     'favicon-76': (76, 76, 1),
+                                     'favicon-76@2x': (76, 76, 2),
+                                     'favicon-16': (16, 16, 1),
+                                     'favicon-32': (32, 32, 1),
+                                     'favicon-64': (64, 64, 1),
+                                     'favicon-96': (96, 96, 1),
+                                     'favicon-160': (160, 160, 1),
+                                     'favicon-196': (196, 196, 1)}},
            'image': {'ios': {'{filename}.imageset/{filename}':
                              (None, None, 1),
                              '{filename}.imageset/{filename}@2x':
@@ -589,22 +625,14 @@ def make_images(image, image_name, to_object, type,
                 continue
             _resize_image_(image, to_object, image_path,
                            (width*scale, height*scale))
-            if '.imageset' in name:
-                _modify_content_json_('imageset', all_contents, image_path,
-                                      (width, height),
-                                      scale,
-                                      system_version)
-            elif '.appiconset' in name:
-                _modify_content_json_('appiconset', all_contents, image_path,
-                                      (width, height),
-                                      scale,
-                                      system_version)
-            elif '.launchimage' in name:
-                _modify_content_json_('launchimage', all_contents, image_path,
-                                      (width, height),
-                                      scale,
-                                      system_version)
-    _save_contents_(to_object, all_contents)
+
+            for type in _configs_.keys():
+                if type in name:
+                    _modify_config_file_(type, all_contents, image_path,
+                                         (width, height),
+                                         scale,
+                                         system_version)
+    _save_configs_(to_object, all_contents)
 
 
 def _main_():

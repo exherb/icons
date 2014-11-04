@@ -153,7 +153,7 @@ def _main_():
     icon_types.append(('image', 'Icon'))
     icon_types.append(('notification',
                       'Notification Icon'))
-    icon_types.append(('webclip', 'Webclip'))
+    icon_types.append(('favicon', 'Favicon'))
     icon_type = tk.StringVar(window, 'icon')
 
     baseline = tk.IntVar(window, 3, 'baseline')
