@@ -20,8 +20,6 @@ from PIL import Image
 
 from icons import make_images
 
-_target_path_ = ''
-
 
 def _show_in_finder_(target_path):
     if sys.platform == 'win32':
@@ -41,24 +39,28 @@ def _main_():
     screenheight = window.winfo_screenheight()
     width = 505
     if sys.platform == 'win32':
-        height = 410
+        height = 430
     else:
-        height = 380
+        height = 400
     x = (screenwidth - width)*0.5
     y = (screenheight - height)*0.5
     window.geometry('{}x{}+{}+{}'.format(width, height, int(x), int(y)))
+    window.is_picking_file = False
+
+    output_path = tk.StringVar(window, '')
 
     icon_types = []
-    icon_types.append((tk.BooleanVar(window, True), 'icon', 'App Icon'))
-    icon_types.append((tk.BooleanVar(window, False), 'launch',
+    icon_types.append(('icon', 'App Icon'))
+    icon_types.append(('launch',
                       'App Lauch Image'))
-    icon_types.append((tk.BooleanVar(window, False), 'toolbar',
+    icon_types.append(('toolbar',
                       'Toolbar Icon'))
-    icon_types.append((tk.BooleanVar(window, False), 'tab', 'Tabbar Icon'))
-    icon_types.append((tk.BooleanVar(window, False), 'image', 'Icon'))
-    icon_types.append((tk.BooleanVar(window, False), 'notification',
+    icon_types.append(('tab', 'Tabbar Icon'))
+    icon_types.append(('image', 'Icon'))
+    icon_types.append(('notification',
                       'Notification Icon'))
-    icon_types.append((tk.BooleanVar(window, False), 'webclip', 'Webclip'))
+    icon_types.append(('webclip', 'Webclip'))
+    icon_type = tk.StringVar(window, 'icon')
 
     baseline = tk.IntVar(window, 3, 'baseline')
 
@@ -78,9 +80,9 @@ def _main_():
 
     types_frame = tk.LabelFrame(frame, bg=background_color,
                                 text='Icon Types')
-    for icon_type in icon_types:
-        tk.Checkbutton(types_frame, bg=background_color, variable=icon_type[0],
-                       text=icon_type[2]).pack(anchor='w')
+    for tmp in icon_types:
+        tk.Radiobutton(types_frame, bg=background_color, variable=icon_type,
+                       value=tmp[0], text=tmp[1]).pack(anchor='w')
     types_frame.grid(row=0, column=1, sticky='nwne', padx=10)
 
     devices_frame = tk.LabelFrame(frame, bg=background_color,
@@ -101,6 +103,24 @@ def _main_():
                    text='4').pack(anchor='w')
     baselines_frame.grid(row=2, column=1, sticky='nwne', padx=10)
 
+    def on_select_output():
+        if window.is_picking_file:
+            return
+        window.is_picking_file = True
+        path = filedialog.askdirectory(title='Select output directory')
+        output_path.set(path)
+        if path:
+            output_select_button['text'] = 'Output: {}'.format(path)
+        else:
+            output_select_button['text'] = 'Output: next to original icon'
+        window.is_picking_file = False
+
+    ttk.Style().configure('TButton', background=background_color)
+    output_select_button = ttk.Button(frame,
+                                      text="Output: next to original icon",
+                                      command=on_select_output)
+    output_select_button.grid(row=3, column=0, columnspan=2, sticky='we')
+
     class Task(threading.Thread):
         def __init__(self, *args, **kwargs):
             self.callback = kwargs['callback']
@@ -120,7 +140,7 @@ def _main_():
             self.hide()
 
         def show(self):
-            self.grid(row=3, column=0, columnspan=2,
+            self.grid(row=4, column=0, columnspan=2,
                       sticky='we')
 
         def hide(self):
@@ -160,18 +180,16 @@ def _main_():
                 self.callback()
 
     progressbar = Progressbar(frame, orient='horizontal', mode='indeterminate')
-    drop_button.is_picking_file = False
 
-    def onSelectIcon(event):
+    def on_select_icon(event):
         if progressbar.is_running:
             return
-        if drop_button.is_picking_file:
+        if window.is_picking_file:
             return
-        drop_button.is_picking_file = True
-        dialog = filedialog.\
-            Open(event.widget,
-                 filetypes=[('Images', '.png .jpg .jpeg .bmp')])
-        icon_path = dialog.show()
+        window.is_picking_file = True
+        icon_path = filedialog.\
+            askopenfilename(title='Select your icon',
+                            filetypes=[('Images', '.png .jpg .jpeg .bmp')])
         if icon_path:
             try:
                 image = Image.open(icon_path)
@@ -179,33 +197,29 @@ def _main_():
                 return
 
             image_name, _ = os.path.splitext(os.path.basename(icon_path))
-            if not _target_path_:
-                target_path = os.path.dirname(icon_path)
+            if output_path.get():
+                to_output_path = output_path.get()
             else:
-                target_path = _target_path_
-            to_icon_types = []
-            for icon_type in icon_types:
-                if icon_type[0].get():
-                    to_icon_types.append(icon_type[1])
+                to_output_path = os.path.dirname(icon_path)
+            to_icon_type = icon_type.get()
             to_devices = []
             for device_type in device_types:
                 if device_type[0].get():
                     to_devices.append(device_type[1])
 
             to_baseline = baseline.get()
-            for to_icon_type in to_icon_types:
-                progressbar.add_task(target=make_images,
-                                     args=(image, image_name,
-                                           os.path.join(target_path,
-                                                        to_icon_type),
-                                           to_icon_type,
-                                           to_devices, to_baseline))
+            progressbar.add_task(target=make_images,
+                                 args=(image, image_name,
+                                       os.path.join(to_output_path,
+                                                    to_icon_type),
+                                       to_icon_type,
+                                       to_devices, to_baseline))
 
             def callback():
-                _show_in_finder_(target_path)
+                _show_in_finder_(to_output_path)
             progressbar.start(callback)
-        drop_button.is_picking_file = False
-    drop_button.bind('<ButtonRelease-1>', onSelectIcon)
+        window.is_picking_file = False
+    drop_button.bind('<ButtonRelease-1>', on_select_icon)
 
     window.lift()
     window.mainloop()
