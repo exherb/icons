@@ -132,10 +132,10 @@ def _main_():
     screenwidth = window.winfo_screenwidth()
     screenheight = window.winfo_screenheight()
     width = 505
+    height = 400
     if sys.platform == 'win32':
-        height = 430
-    else:
-        height = 400
+        height = height + 30
+
     x = (screenwidth - width)*0.5
     y = (screenheight - height)*0.5
     window.geometry('{}x{}+{}+{}'.format(width, height, int(x), int(y)))

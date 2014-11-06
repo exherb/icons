@@ -14,7 +14,7 @@ if sys.platform == 'darwin':
         setup_requires=['py2app'],
         app=[mainscript],
         options={'py2app': {'argv_emulation': False,
-                            'iconfile': 'images/icon.icns',
+                            'iconfile': 'icos/icon.icns',
                             'plist': {
                                 'CFBundleName': name,
                                 'CFBundleShortVersionString': '1.0.0',
@@ -27,7 +27,7 @@ elif sys.platform == 'win32':
     extra_options = dict(
         setup_requires=['py2exe'],
         windows=[{'script': mainscript,
-                  'icon_resources': [(0, 'images/icon.ico')]}],
+                  'icon_resources': [(0, 'icos/icon.ico')]}],
         bundle_files=2
     )
 setup(
