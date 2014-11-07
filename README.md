@@ -45,9 +45,4 @@ icons [-o TARGET_PATH] [--baseline BASELINE]
 
 ### Download
 
-* [1.1 Alpha](https://github.com/exherb/icons/releases/tag/1.1-alpha)
-
-## TODO
-
-* favicon for web
-* ico for windows
+* [1.2 Alpha](https://github.com/exherb/icons/releases/tag/1.2-alpha)
