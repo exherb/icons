@@ -14,11 +14,11 @@ generate icons of all sizes and config file (e.g. Contents.json) required by iOS
 
 ## Destop version
 
-![screenshot](screenshots/icons_gui.png)
-
 ### Download
 
 * [1.1](https://github.com/exherb/icons/releases/tag/1.1)
+
+![screenshot](screenshots/icons_gui.png)
 
 ## Web version
 
