@@ -189,7 +189,7 @@ def _main_():
     def on_icon_type_changed(*args):
         raw_icon_type = icon_type.get()
         devices = supported_devices(raw_icon_type)
-        device_types.clear()
+        del device_types[:]
         for device in devices:
             device_types.append((tk.BooleanVar(window, True), device,
                                 device_name(device)))
