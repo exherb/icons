@@ -132,7 +132,7 @@ def _main_():
     screenwidth = window.winfo_screenwidth()
     screenheight = window.winfo_screenheight()
     width = 515
-    height = 445
+    height = 475
     if sys.platform == 'win32':
         height = height + 30
 
@@ -160,7 +160,7 @@ def _main_():
 
     baseline = tk.IntVar(window, 3, 'baseline')
 
-    frame = tk.Frame(window, bg=background_color, height=400, padx=20, pady=20)
+    frame = tk.Frame(window, bg=background_color, padx=20, pady=20)
     frame.pack(fill='both', expand=True)
 
     drop_button = tk.Canvas(frame, bg=background_color, width=320, height=320,
@@ -168,7 +168,7 @@ def _main_():
     drop_button.create_rectangle(5, 5, 315, 315, width=10,
                                  dash=(30), activefill=background_color,
                                  outline="#717171", activeoutline='#0c0')
-    drop_button.grid(row=0, column=0, rowspan=3)
+    drop_button.grid(row=0, column=0, rowspan=3, pady=40)
 
     types_frame = tk.LabelFrame(frame, bg=background_color,
                                 text='Icon Types')
@@ -207,10 +207,11 @@ def _main_():
             tk.Checkbutton(devices_frame, bg=background_color,
                            variable=device_type[0],
                            text=device_type[2]).pack(anchor='w')
-        toggle_icon_types.set(True)
-        tk.Checkbutton(devices_frame, bg=background_color,
-                       variable=toggle_icon_types,
-                       text='All').pack(anchor='w')
+        if len(device_types) > 1:
+            toggle_icon_types.set(True)
+            tk.Checkbutton(devices_frame, bg=background_color,
+                           variable=toggle_icon_types,
+                           text='All').pack(anchor='w')
         for old_frame in frame.grid_slaves(row=1, column=1):
             old_frame.grid_remove()
         devices_frame.grid(row=1, column=1, sticky='nwne', padx=10)
