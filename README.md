@@ -8,6 +8,7 @@ generate icons of all sizes and config file (e.g. Contents.json) required by iOS
 * Android
 * Windows Phone
 * OS X: iconset && icns(only mac)
+* Windows: ico
 * Blackberry
 * Chrome Web Store
 
