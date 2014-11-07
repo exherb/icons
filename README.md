@@ -45,4 +45,4 @@ icons [-o TARGET_PATH] [--baseline BASELINE]
 
 ### Download
 
-* [1.2 Alpha](https://github.com/exherb/icons/releases/tag/1.2-alpha)
+* [1.1](https://github.com/exherb/icons/releases/tag/1.1)
