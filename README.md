@@ -11,6 +11,14 @@ generate icons of all sizes and config file (e.g. Contents.json) required by iOS
 * Blackberry
 * Chrome Web Store
 
+## Destop version
+
+![screenshot](screenshots/icons_gui.png)
+
+### Download
+
+* [1.1](https://github.com/exherb/icons/releases/tag/1.1)
+
 ## Web version
 
 [iconographys](http://iconographys.appspot.com/) - http://iconographys.appspot.com/
@@ -38,11 +46,3 @@ icons [-o TARGET_PATH] [--baseline BASELINE]
 * --zip(optional) - put icons into a zip file instead of directory
 
 ![screenshot](screenshots/icons.png)
-
-## Destop version
-
-![screenshot](screenshots/icons_gui.png)
-
-### Download
-
-* [1.1](https://github.com/exherb/icons/releases/tag/1.1)
