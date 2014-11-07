@@ -225,7 +225,8 @@ def _main_():
     output_select_button = ttk.Button(frame,
                                       text="Output: next to original icon",
                                       command=on_select_output)
-    output_select_button.grid(row=3, column=0, columnspan=2, sticky='we')
+    output_select_button.grid(row=3, column=0, columnspan=2, sticky='we',
+                              pady=5)
 
     class Task(threading.Thread):
         def __init__(self, *args, **kwargs):

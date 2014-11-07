@@ -45,7 +45,7 @@ _configs_ = {'favicon': '''<head>
     <link rel="apple-touch-icon" sizes="120x120" href="ios/apple-touch-icon-120x120.png">
     <link rel="apple-touch-icon" sizes="60x60" href="ios/apple-touch-icon-60x60.png">
     <link rel="icon" type="image/png" sizes="96x96" href="googletv/favicon-96.png">
-    <meta name="msapplication-TileImage" content=“windows8/pinned.png”>
+    <meta name="msapplication-TileImage" content="windows8/pinned.png">
     <meta name="msapplication-TileColor" content="#ff0000”>
 </head>
 ''',
