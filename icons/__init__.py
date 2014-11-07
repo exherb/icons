@@ -73,6 +73,7 @@ def _resize_image_(image, to_object, to_path, to_size):
     del temp
 
 _configs_ = {'favicon': '''<head>
+    <link rel="icon" type="image/x-icon" href="web/favicon.ico" />
     <link rel="icon" type="image/png" sizes="196x196" href="web/favicon-196.png">
     <link rel="icon" type="image/png" sizes="160x160" href="web/favicon-160.png">
     <link rel="icon" type="image/png" sizes="64x64" href="web/favicon-64.png">
