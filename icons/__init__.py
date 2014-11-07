@@ -4,6 +4,7 @@
 import os
 import sys
 import json
+import struct
 import subprocess
 from zipfile import ZipFile
 try:
@@ -14,7 +15,42 @@ except ImportError:
 from PIL import Image
 
 
-_image_format_ = ('png', '.png')
+_MAGIC = b"\0\0\1\0"
+
+
+def _save_to_ico(image, fp,
+                 sizes=[(16, 16), (24, 24), (32, 32), (48, 48), (64, 64),
+                        (128, 128), (255, 255)]):
+    fp.write(_MAGIC)  # (2+2)
+    width, height = image.size
+    filter(lambda x: False if (x[0] > width or x[1] > height or
+                               x[0] > 255 or x[1] > 255) else True, sizes)
+    sizes = sorted(sizes, key=lambda x: x[0], reverse=True)
+    fp.write(struct.pack('H', len(sizes)))  # idCount(2)
+    offset = fp.tell() + len(sizes)*16
+    for size in sizes:
+        width, height = size
+        fp.write(struct.pack('B', width))  # bWidth(1)
+        fp.write(struct.pack('B', height))  # bHeight(1)
+        fp.write(b'\0')  # bColorCount(1)
+        fp.write(b'\0')  # bReserved(1)
+        fp.write(struct.pack('H', 0))  # wPlanes(2)
+        fp.write(struct.pack('H', 32))  # wBitCount(2)
+
+        image_io = BytesIO()
+        image.thumbnail(size, Image.ANTIALIAS)
+        image.save(image_io, 'png')
+        image_io.seek(0)
+        image_bytes = image_io.read()
+        bytes_len = len(image_bytes)
+        fp.write(struct.pack('I', bytes_len))  # dwBytesInRes(4)
+        fp.write(struct.pack('I', offset))  # dwImageOffset(4)
+        current = fp.tell()
+        fp.seek(offset)
+        fp.write(image_bytes)
+        offset = offset + bytes_len
+        fp.seek(current)
+    fp.close()
 
 
 def _resize_image_(image, to_object, to_path, to_size):
@@ -24,14 +60,16 @@ def _resize_image_(image, to_object, to_path, to_size):
     else:
         temp = image.copy()
         temp.thumbnail(to_size, Image.ANTIALIAS)
+    _, ext = os.path.splitext(to_path)
+    ext = ext.lstrip('.')
     if isinstance(to_object, ZipFile):
         f = BytesIO()
-        temp.save(f, _image_format_[0])
+        temp.save(f, ext)
         f.seek(0)
         to_object.writestr(to_path, f.read())
     else:
         with open(to_path, 'wb') as f:
-            temp.save(f, _image_format_[0])
+            temp.save(f, ext)
     del temp
 
 _configs_ = {'favicon': '''<head>
@@ -408,9 +446,9 @@ _sizes_ = {'icon': {'ios': {'AppIcon.appiconset/Icon-29': (29, 29, 1),
                                      'FlipTileLarge': (691, 336, 1),
                                      'TileSmallBest': (70, 110, 1),
                                      'TileMediumBest': (130, 202, 1),
-                                     'Lens.Screen-WVGA': (173, 173, 1),
-                                     'Lens.Screen-720p': (259, 259, 1),
-                                     'Lens.Screen-WXGA': (277, 277, 1),
+                                     'Lens-Screen-WVGA': (173, 173, 1),
+                                     'Lens-Screen-720p': (259, 259, 1),
+                                     'Lens-Screen-WXGA': (277, 277, 1),
                                      'FileHandlerSmall': (33, 33, 1),
                                      'FileHandlerMedium': (69, 69, 1),
                                      'FileHandlerLarge': (179, 179, 1),
@@ -434,7 +472,8 @@ _sizes_ = {'icon': {'ios': {'AppIcon.appiconset/Icon-29': (29, 29, 1),
                             (256, 256, 2),
                             'AppIcon.iconset/icon_512x512': (512, 512, 1),
                             'AppIcon.iconset/icon_512x512@2x':
-                            (512, 512, 2)}},
+                            (512, 512, 2)},
+                    'windows': {'icon.ico': (256, 256, 1)}},
            'launch': {'ios': {'LaunchImage.launchimage/' +
                               'Default-To-Status-Bar-Portrait~ipad':
                               (768, 1004, 1),
@@ -586,7 +625,8 @@ _sizes_ = {'icon': {'ios': {'AppIcon.appiconset/Icon-29': (29, 29, 1),
                                'favicon-32': (32, 32, 1),
                                'favicon-64': (64, 64, 1),
                                'favicon-160': (160, 160, 1),
-                               'favicon-196': (196, 196, 1)},
+                               'favicon-196': (196, 196, 1),
+                               'favicon.ico': (256, 256, 1)},
                        'googletv': {'favicon-96': (96, 96, 1)},
                        'windows8': {'pinned': (144, 144, 1)}},
            'image': {'ios': {'{filename}.imageset/{filename}':
@@ -628,12 +668,12 @@ def supported_types():
 
 def make_images(image, image_name, to_object, type,
                 allowed_devices=None, baseline_scale=3):
-    if not allowed_devices:
-        allowed_devices = _sizes_[type].keys()
     original_image_width, original_image_height = image.size
     if type not in _sizes_:
         raise RuntimeError('Error: no such icon type')
     devices = _sizes_[type]
+    if not allowed_devices:
+        allowed_devices = devices.keys()
     all_contents = {}
     for device, sizes in devices.items():
         if device not in allowed_devices:
@@ -686,31 +726,40 @@ def make_images(image, image_name, to_object, type,
             if height is None:
                 height = width*1.0/original_image_width*original_image_height
             name = name.replace('{filename}', image_name)
-            image_path = os.path.join(device_path,
-                                      name + _image_format_[1])
-            if scale > baseline_scale:
-                print('Warning: {} scale {} is bigger than base line scale {}'.
-                      format(image_path, scale, baseline_scale))
-                continue
-            if not isinstance(to_object, ZipFile):
-                image_dir_path = os.path.dirname(image_path)
-                if not os.path.exists(image_dir_path):
-                    os.makedirs(image_dir_path)
-                elif not os.path.isdir(image_dir_path):
-                    print('Warning: can\'t make dir {} for {}({}x{})'.
-                          format(image_dir_path, image_path, width*scale,
-                                 height*scale))
+            image_path = os.path.join(device_path, name)
+            _, ext = os.path.splitext(name)
+            if ext.lower() == '.ico':
+                with open(image_path, 'wb') as f:
+                    _save_to_ico(image, f)
+            else:
+                if not ext:
+                    image_path = image_path + '.png'
+                if scale > baseline_scale:
+                    print(('Warning: {} scale {} is bigger than ' +
+                           'base line scale {}').
+                          format(image_path, scale, baseline_scale))
                     continue
-                if os.path.exists(image_path):
-                    print('Warning: {} is already exists'.format(image_path))
+                if not isinstance(to_object, ZipFile):
+                    image_dir_path = os.path.dirname(image_path)
+                    if not os.path.exists(image_dir_path):
+                        os.makedirs(image_dir_path)
+                    elif not os.path.isdir(image_dir_path):
+                        print('Warning: can\'t make dir {} for {}({}x{})'.
+                              format(image_dir_path, image_path, width*scale,
+                                     height*scale))
+                        continue
+                    if os.path.exists(image_path):
+                        print('Warning: {} is already exists'.
+                              format(image_path))
+                        continue
+                if width > original_image_width or\
+                   height > original_image_height:
+                    print('Warning: {}x{} is too small for {}({}x{})'.
+                          format(original_image_width, original_image_height,
+                                 image_path, width*scale, height*scale))
                     continue
-            if width > original_image_width or height > original_image_height:
-                print('Warning: {}x{} is too small for {}({}x{})'.
-                      format(original_image_width, original_image_height,
-                             image_path, width*scale, height*scale))
-                continue
-            _resize_image_(image, to_object, image_path,
-                           (width*scale, height*scale))
+                _resize_image_(image, to_object, image_path,
+                               (width*scale, height*scale))
 
             for type in _configs_.keys():
                 if type in name:
