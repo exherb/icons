@@ -2,7 +2,9 @@
 # coding=utf-8
 
 import os
+import sys
 import json
+import subprocess
 from zipfile import ZipFile
 try:
     from io import BytesIO
@@ -52,6 +54,7 @@ _configs_ = {'favicon': '''<head>
              '.imageset': [{'idiom': 'universal', 'scale': '1x'},
                            {'idiom': 'universal', 'scale': '2x'},
                            {'idiom': 'universal', 'scale': '3x'}],
+             '.iconset': None,
              '.appiconset': [{'idiom': 'iphone', 'scale': '1x',
                               'size': '29x29'},
                              {'idiom': 'iphone', 'scale': '2x',
@@ -188,6 +191,15 @@ _configs_ = {'favicon': '''<head>
                                'extent': 'full-screen'}]}
 
 
+def _generate_icns(imageset_path):
+    imageset_path = os.path.realpath(imageset_path)
+    output_path = os.path.realpath(os.path.join(os.path.dirname(imageset_path),
+                                                'AppIcon.icns'))
+    if sys.platform == 'darwin':
+        subprocess.call(['iconutil', '--convert', 'icns', '--output',
+                         output_path, imageset_path])
+
+
 def _modify_config_file_(type, all_contents, image_path, lookfor_image_size,
                          lookfor_image_scale,
                          lookfor_system_version=None):
@@ -196,15 +208,34 @@ def _modify_config_file_(type, all_contents, image_path, lookfor_image_size,
     source_contents = _configs_[type]
 
     if type == 'favicon':
-        contents_json_path = os.path.join(os.path.dirname(image_dir),
-                                          'configs.txt')
-        if contents_json_path in all_contents:
+        type_config_path = os.path.join(os.path.dirname(image_dir),
+                                        'configs.txt')
+        if type_config_path in all_contents:
             return
         contents = source_contents
+    elif type == '.iconset':
+        type_config_path = os.path.join(os.path.dirname(image_dir),
+                                        'AppIcon.icns')
+        if os.path.exists(type_config_path):
+            return
+        required_icons = set(['icon_128x128.png',
+                              'icon_128x128@2x.png',
+                              'icon_16x16.png',
+                              'icon_16x16@2x.png',
+                              'icon_256x256.png',
+                              'icon_256x256@2x.png',
+                              'icon_32x32.png',
+                              'icon_32x32@2x.png',
+                              'icon_512x512.png',
+                              'icon_512x512@2x.png'])
+        if (required_icons - set(os.listdir(image_dir))):
+            return
+        _generate_icns(image_dir)
+        return
     else:
-        contents_json_path = os.path.join(image_dir, 'Contents.json')
-        if contents_json_path in all_contents:
-            contents = all_contents[contents_json_path]
+        type_config_path = os.path.join(image_dir, 'Contents.json')
+        if type_config_path in all_contents:
+            contents = all_contents[type_config_path]
         else:
             contents = {'images': []}
         images = contents.get('images', None)
@@ -324,7 +355,7 @@ def _modify_config_file_(type, all_contents, image_path, lookfor_image_size,
         matched_image['filename'] = image_name
         contents['info'] = {'version': 1, 'author': 'icons'}
 
-    all_contents[contents_json_path] = contents
+    all_contents[type_config_path] = contents
 
 
 def _save_configs_(to_object, contents):
@@ -366,7 +397,44 @@ _sizes_ = {'icon': {'ios': {'AppIcon.appiconset/Icon-29': (29, 29, 1),
                                 (48, 48, 3),
                                 'drawable-xxxhdpi/ic_launcher':
                                 (48, 48, 4),
-                                'playstore': (512, 512, 1)}},
+                                'playstore': (512, 512, 1)},
+                    'windowsphone': {'AppBar': (48, 48, 1),
+                                     'ApplicationIcon': (90, 90, 1),
+                                     'LockIcon': (38, 38, 1),
+                                     'TileSmall': (110, 110, 1),
+                                     'TileMedium': (202, 202, 1),
+                                     'FlipTileSmall': (159, 159, 1),
+                                     'FlipTileMedium': (336, 336, 1),
+                                     'FlipTileLarge': (691, 336, 1),
+                                     'TileSmallBest': (70, 110, 1),
+                                     'TileMediumBest': (130, 202, 1),
+                                     'Lens.Screen-WVGA': (173, 173, 1),
+                                     'Lens.Screen-720p': (259, 259, 1),
+                                     'Lens.Screen-WXGA': (277, 277, 1),
+                                     'FileHandlerSmall': (33, 33, 1),
+                                     'FileHandlerMedium': (69, 69, 1),
+                                     'FileHandlerLarge': (179, 179, 1),
+                                     'Store': (300, 300, 1)},
+                    'blackberry': {'icon-90': (90, 90, 1),
+                                   'icon-96': (96, 96, 1),
+                                   'icon-110': (110, 110, 1),
+                                   'icon-114': (114, 114, 1)},
+                    'chromestore': {'icon16': (16, 16, 1),
+                                    'icon48': (48, 48, 1),
+                                    'icon128': (128, 128, 1)},
+                    'osx': {'AppIcon.iconset/icon_16x16': (16, 16, 1),
+                            'AppIcon.iconset/icon_16x16@2x': (16, 16, 2),
+                            'AppIcon.iconset/icon_32x32': (32, 32, 1),
+                            'AppIcon.iconset/icon_32x32@2x': (32, 32, 2),
+                            'AppIcon.iconset/icon_128x128': (128, 128, 1),
+                            'AppIcon.iconset/icon_128x128@2x':
+                            (128, 128, 2),
+                            'AppIcon.iconset/icon_256x256': (256, 256, 1),
+                            'AppIcon.iconset/icon_256x256@2x':
+                            (256, 256, 2),
+                            'AppIcon.iconset/icon_512x512': (512, 512, 1),
+                            'AppIcon.iconset/icon_512x512@2x':
+                            (512, 512, 2)}},
            'launch': {'ios': {'LaunchImage.launchimage/' +
                               'Default-To-Status-Bar-Portrait~ipad':
                               (768, 1004, 1),
@@ -537,12 +605,17 @@ _sizes_ = {'icon': {'ios': {'AppIcon.appiconset/Icon-29': (29, 29, 1),
                                  (None, None, 4)}
                      }}
 
-_device_names_ = {'ios': 'iOS', 'android': 'Android', 'web': 'Web',
-                  'googletv': 'Google TV', 'windows8': 'Widnows 8'}
+_device_names_ = {'ios': 'iOS', 'osx': 'OS X',
+                  'googletv': 'Google TV', 'windows8': 'Widnows 8',
+                  'windowsphone': 'Windows Phone', 'blackberry': 'Black Beery',
+                  'chromestore': 'Chrome Web Store'}
 
 
 def device_name(device):
-    return _device_names_.get(device, device)
+    device_name = _device_names_.get(device, None)
+    if device_name:
+        return device_name
+    return device[0].upper() + device[1:]
 
 
 def supported_devices(type):
@@ -645,6 +718,7 @@ def make_images(image, image_name, to_object, type,
                                          (width, height),
                                          scale,
                                          system_version)
+                    break
     _save_configs_(to_object, all_contents)
 
 

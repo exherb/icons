@@ -2,6 +2,15 @@
 
 generate icons of all sizes and config file (e.g. Contents.json) required by iOS or Android app, inspired by http://makeappicon.com
 
+# Supported Devices
+
+* iOS
+* Android
+* Windows Phone
+* OS X: iconset && icns(only mac)
+* Blackberry
+* Chrome Web Store
+
 ## Web version
 
 [iconographys](http://iconographys.appspot.com/) - http://iconographys.appspot.com/
@@ -41,5 +50,4 @@ icons [-o TARGET_PATH] [--baseline BASELINE]
 ## TODO
 
 * favicon for web
-* icns for mac
 * ico for windows

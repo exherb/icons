@@ -131,8 +131,8 @@ def _main_():
     window.title('Drop Icon Below')
     screenwidth = window.winfo_screenwidth()
     screenheight = window.winfo_screenheight()
-    width = 505
-    height = 400
+    width = 515
+    height = 445
     if sys.platform == 'win32':
         height = height + 30
 
@@ -186,6 +186,14 @@ def _main_():
                    variable=baseline, value=4,
                    text='4').pack(anchor='w')
 
+    toggle_icon_types = tk.BooleanVar(window, True)
+
+    def on_toggle_icon_types(*args):
+        state = toggle_icon_types.get()
+        for device_type in device_types:
+            device_type[0].set(state)
+    toggle_icon_types.trace('w', on_toggle_icon_types)
+
     def on_icon_type_changed(*args):
         raw_icon_type = icon_type.get()
         devices = supported_devices(raw_icon_type)
@@ -199,6 +207,10 @@ def _main_():
             tk.Checkbutton(devices_frame, bg=background_color,
                            variable=device_type[0],
                            text=device_type[2]).pack(anchor='w')
+        toggle_icon_types.set(True)
+        tk.Checkbutton(devices_frame, bg=background_color,
+                       variable=toggle_icon_types,
+                       text='All').pack(anchor='w')
         for old_frame in frame.grid_slaves(row=1, column=1):
             old_frame.grid_remove()
         devices_frame.grid(row=1, column=1, sticky='nwne', padx=10)

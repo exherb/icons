@@ -17,8 +17,8 @@ if sys.platform == 'darwin':
                             'iconfile': 'icos/icon.icns',
                             'plist': {
                                 'CFBundleName': name,
-                                'CFBundleShortVersionString': '1.0.1',
-                                'CFBundleVersion': '1.0.1',
+                                'CFBundleShortVersionString': '1.1',
+                                'CFBundleVersion': '1.1',
                                 'NSHumanReadableCopyright': '@Herb Brewer 2014'
                                 }
                             }})
