@@ -16,7 +16,7 @@ import jinja2
 
 from PIL import Image
 
-from icons import make_images, supported_types, supported_devices
+from icons import make_images, supported_types
 
 
 JINJA_ENVIRONMENT = jinja2.Environment(
@@ -41,7 +41,7 @@ class MainPage(webapp2.RequestHandler):
         with closing(ZipFile(zip_file, 'w', ZIP_DEFLATED)) as tmp:
             image = Image.open(file)
             make_images(image, image_type, tmp, image_type,
-                        supported_devices(), 3)
+                        None, 3)
         zip_file.seek(0)
         file_name = files.blobstore.create(mime_type=
                                            'application/x-zip-compressed',

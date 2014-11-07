@@ -33,18 +33,20 @@ def _resize_image_(image, to_object, to_path, to_size):
     del temp
 
 _configs_ = {'favicon': '''<head>
-    <link rel="icon" type="image/png" sizes="196x196" href="/favicon-196.png">
-    <link rel="icon" type="image/png" sizes="160x160" href="/favicon-160.png">
-    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png">
-    <link rel="icon" type="image/png" sizes="64x64" href="/favicon-64.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="/favicon-76@2x.png">
-    <link rel="apple-touch-icon" sizes="76x76" href="/favicon-76.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/favicon-60@3x.png">
-    <link rel="apple-touch-icon" sizes="120x120" href="/favicon-60@2x.png">
-    <link rel="apple-touch-icon" sizes="60x60" href="/favicon-60.png">
-    <link rel="apple-touch-icon" href="/favicon-60.png">
+    <link rel="icon" type="image/png" sizes="196x196" href="web/favicon-196.png">
+    <link rel="icon" type="image/png" sizes="160x160" href="web/favicon-160.png">
+    <link rel="icon" type="image/png" sizes="64x64" href="web/favicon-64.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="web/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="24x24" href="web/favicon-24.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="web/favicon-16.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="ios/apple-touch-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="ios/apple-touch-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="ios/apple-touch-icon-180x180.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="ios/apple-touch-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="ios/apple-touch-icon-60x60.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="googletv/favicon-96.png">
+    <meta name="msapplication-TileImage" content=“windows8/pinned.png”>
+    <meta name="msapplication-TileColor" content="#ff0000”>
 </head>
 ''',
              '.imageset': [{'idiom': 'universal', 'scale': '1x'},
@@ -194,7 +196,8 @@ def _modify_config_file_(type, all_contents, image_path, lookfor_image_size,
     source_contents = _configs_[type]
 
     if type == 'favicon':
-        contents_json_path = os.path.join(image_dir, 'configs.txt')
+        contents_json_path = os.path.join(os.path.dirname(image_dir),
+                                          'configs.txt')
         if contents_json_path in all_contents:
             return
         contents = source_contents
@@ -505,17 +508,19 @@ _sizes_ = {'icon': {'ios': {'AppIcon.appiconset/Icon-29': (29, 29, 1),
                                         (22, 22, 3),
                                         'drawable-xxxhdpi/{filename}':
                                         (22, 22, 4)}},
-           'favicon': {'universal': {'favicon-60': (60, 60, 1),
-                                     'favicon-60@2x': (60, 60, 2),
-                                     'favicon-60@3x': (60, 60, 3),
-                                     'favicon-76': (76, 76, 1),
-                                     'favicon-76@2x': (76, 76, 2),
-                                     'favicon-16': (16, 16, 1),
-                                     'favicon-32': (32, 32, 1),
-                                     'favicon-64': (64, 64, 1),
-                                     'favicon-96': (96, 96, 1),
-                                     'favicon-160': (160, 160, 1),
-                                     'favicon-196': (196, 196, 1)}},
+           'favicon': {'ios': {'apple-touch-icon-60x60': (60, 60, 1),
+                               'apple-touch-icon-120x120': (60, 60, 2),
+                               'apple-touch-icon-180x180': (60, 60, 3),
+                               'apple-touch-icon-76x76': (76, 76, 1),
+                               'apple-touch-icon-152x152': (76, 76, 2)},
+                       'web': {'favicon-16': (16, 16, 1),
+                               'favicon-24': (24, 24, 1),
+                               'favicon-32': (32, 32, 1),
+                               'favicon-64': (64, 64, 1),
+                               'favicon-160': (160, 160, 1),
+                               'favicon-196': (196, 196, 1)},
+                       'googletv': {'favicon-96': (96, 96, 1)},
+                       'windows8': {'pinned': (144, 144, 1)}},
            'image': {'ios': {'{filename}.imageset/{filename}':
                              (None, None, 1),
                              '{filename}.imageset/{filename}@2x':
@@ -532,9 +537,16 @@ _sizes_ = {'icon': {'ios': {'AppIcon.appiconset/Icon-29': (29, 29, 1),
                                  (None, None, 4)}
                      }}
 
+_device_names_ = {'ios': 'iOS', 'android': 'Android', 'web': 'Web',
+                  'googletv': 'Google TV', 'windows8': 'Widnows 8'}
 
-def supported_devices():
-    return ['ios', 'android']
+
+def device_name(device):
+    return _device_names_.get(device, device)
+
+
+def supported_devices(type):
+    return _sizes_.get(type, {}).keys()
 
 
 def supported_types():
@@ -542,8 +554,9 @@ def supported_types():
 
 
 def make_images(image, image_name, to_object, type,
-                allowed_devices=supported_devices(), baseline_scale=3):
-    allowed_devices.append('universal')
+                allowed_devices=None, baseline_scale=3):
+    if not allowed_devices:
+        allowed_devices = _sizes_[type].keys()
     original_image_width, original_image_height = image.size
     if type not in _sizes_:
         raise RuntimeError('Error: no such icon type')
@@ -655,15 +668,14 @@ def _main_():
                         dest='icon_type',
                         help='icon type')
     parser.add_argument('--devices', '-d',
-                        default=supported_devices(),
+                        default=[],
                         nargs='+',
-                        choices=supported_devices(),
+                        choices=['ios', 'android'],
                         help='including devices')
     parser.add_argument('--zip', '-z', action='store_const', const=True)
     args = parser.parse_args()
     if not args.target_path:
-        args.target_path = os.path.join(os.path.dirname(args.icon_path),
-                                        args.icon_type)
+        args.target_path = os.path.dirname(args.icon_path)
     if args.zip:
         ext = os.path.splitext(args.target_path)[-1].lower()
         if ext != '.zip':

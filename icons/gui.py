@@ -18,7 +18,7 @@ except ImportError:
 from collections import deque
 from PIL import Image
 
-from icons import make_images
+from icons import make_images, supported_devices, device_name
 
 
 def _load_tkdnd(master):
@@ -147,20 +147,18 @@ def _main_():
     icon_types.append(('icon', 'App Icon'))
     icon_types.append(('launch',
                       'App Lauch Image'))
+    icon_types.append(('image', 'Icon'))
+    icon_types.append(('favicon', 'Favicon'))
     icon_types.append(('toolbar',
                       'Toolbar Icon'))
     icon_types.append(('tab', 'Tabbar Icon'))
-    icon_types.append(('image', 'Icon'))
     icon_types.append(('notification',
                       'Notification Icon'))
-    icon_types.append(('favicon', 'Favicon'))
     icon_type = tk.StringVar(window, 'icon')
 
-    baseline = tk.IntVar(window, 3, 'baseline')
-
     device_types = []
-    device_types.append((tk.BooleanVar(window, True), 'ios', 'iOS'))
-    device_types.append((tk.BooleanVar(window, True), 'android', 'Android'))
+
+    baseline = tk.IntVar(window, 3, 'baseline')
 
     frame = tk.Frame(window, bg=background_color, height=400, padx=20, pady=20)
     frame.pack(fill='both', expand=True)
@@ -179,14 +177,6 @@ def _main_():
                        value=tmp[0], text=tmp[1]).pack(anchor='w')
     types_frame.grid(row=0, column=1, sticky='nwne', padx=10)
 
-    devices_frame = tk.LabelFrame(frame, bg=background_color,
-                                  text='Devices')
-    for device_type in device_types:
-        tk.Checkbutton(devices_frame, bg=background_color,
-                       variable=device_type[0],
-                       text=device_type[2]).pack(anchor='w')
-    devices_frame.grid(row=1, column=1, sticky='nwne', padx=10)
-
     baselines_frame = tk.LabelFrame(frame, bg=background_color,
                                     text='Baseline')
     tk.Radiobutton(baselines_frame, bg=background_color,
@@ -195,7 +185,29 @@ def _main_():
     tk.Radiobutton(baselines_frame, bg=background_color,
                    variable=baseline, value=4,
                    text='4').pack(anchor='w')
-    baselines_frame.grid(row=2, column=1, sticky='nwne', padx=10)
+
+    def on_icon_type_changed(*args):
+        raw_icon_type = icon_type.get()
+        devices = supported_devices(raw_icon_type)
+        device_types.clear()
+        for device in devices:
+            device_types.append((tk.BooleanVar(window, True), device,
+                                device_name(device)))
+        devices_frame = tk.LabelFrame(frame, bg=background_color,
+                                      text='Devices')
+        for device_type in device_types:
+            tk.Checkbutton(devices_frame, bg=background_color,
+                           variable=device_type[0],
+                           text=device_type[2]).pack(anchor='w')
+        for old_frame in frame.grid_slaves(row=1, column=1):
+            old_frame.grid_remove()
+        devices_frame.grid(row=1, column=1, sticky='nwne', padx=10)
+        if raw_icon_type == 'image':
+            baselines_frame.grid(row=2, column=1, sticky='nwne', padx=10)
+        else:
+            baselines_frame.grid_forget()
+    icon_type.trace('w', on_icon_type_changed)
+    on_icon_type_changed()
 
     def on_select_output():
         if window.is_picking_file:
@@ -310,8 +322,7 @@ def _main_():
             to_baseline = baseline.get()
             progressbar.add_task(target=make_images,
                                  args=(image, image_name,
-                                       os.path.join(to_output_path,
-                                                    to_icon_type),
+                                       to_output_path,
                                        to_icon_type,
                                        to_devices, to_baseline))
 
