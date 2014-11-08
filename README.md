@@ -1,16 +1,16 @@
 # Icons
 
-generate icons of all sizes and config file (e.g. Contents.json) required by iOS or Android app, inspired by http://makeappicon.com
+generate icons of all sizes and config file (e.g. Contents.json) required devices, inspired by http://makeappicon.com
 
 # Supported Devices
 
-* iOS
-* Android
-* Windows Phone
-* OS X: iconset && icns(only mac)
-* Windows: ico
+* iOS && Android && Windows Phone
+* OS X - icns (mac only)
+* Windows - ico
+* Favicon - ico && apple-touch-icon
 * Blackberry
 * Chrome Web Store
+
 
 ## Destop version
 
