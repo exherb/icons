@@ -4,6 +4,7 @@
 import os
 import sys
 import json
+from collections import OrderedDict
 import struct
 import subprocess
 from zipfile import ZipFile
@@ -134,100 +135,73 @@ _configs_ = {'favicon': '''<head>
                               'size': '76x76'},
                              {'idiom': 'car', 'scale': '1x',
                               'size': '120x120'}],
-             '.launchimage': [{'scale': '3x',
-                               'orientation': 'portrait',
-                               'subtype': '736h',
-                               'minimum-system-version': '8.0',
+             '.launchimage': [{'extent': 'full-screen',
                                'idiom': 'iphone',
-                               'extent': 'full-screen'},
-                              {'scale': '3x',
+                               'subtype': '736h',
+                               'filename': 'Default-800-Portrait-736h.png',
+                               'minimum-system-version': '8.0',
+                               'orientation': 'portrait',
+                               'scale': '3x'
+                               },
+                              {'extent': 'full-screen',
+                               'idiom': 'iphone',
+                               'subtype': '736h',
+                               'filename': 'Default-800-Landscape-736h.png',
+                               'minimum-system-version': '8.0',
                                'orientation': 'landscape',
-                               'subtype': '736h',
-                               'minimum-system-version': '8.0',
+                               'scale': '3x'
+                               },
+                              {'extent': 'full-screen',
                                'idiom': 'iphone',
-                               'extent': 'full-screen'},
-                              {'scale': '2x',
-                               'orientation': 'portrait',
                                'subtype': '667h',
+                               'filename': 'Default-800-667h.png',
                                'minimum-system-version': '8.0',
-                               'idiom': 'iphone',
-                               'extent': 'full-screen'},
-                              {'scale': '2x',
                                'orientation': 'portrait',
+                               'scale': '2x'
+                               },
+                              {'orientation': 'portrait',
+                               'idiom': 'iphone',
+                               'extent': 'full-screen',
                                'minimum-system-version': '7.0',
+                               'filename': 'Default@2x.png',
+                               'scale': '2x'
+                               },
+                              {'extent': 'full-screen',
                                'idiom': 'iphone',
-                               'extent': 'full-screen'},
-                              {'scale': '2x',
-                               'orientation': 'portrait',
                                'subtype': 'retina4',
-                               'minimum-system-version': '7.0',
-                               'idiom': 'iphone',
-                               'extent': 'full-screen'},
-                              {'idiom': 'ipad',
+                               'filename': 'Default-700-568h@2x.png',
                                'minimum-system-version': '7.0',
                                'orientation': 'portrait',
+                               'scale': '2x'
+                               },
+                              {'orientation': 'portrait',
+                               'idiom': 'ipad',
                                'extent': 'full-screen',
-                               'scale': '1x'},
-                              {'idiom': 'ipad',
                                'minimum-system-version': '7.0',
-                               'orientation': 'landscape',
+                               'filename': 'Default-700-Portrait~ipad.png',
+                               'scale': '1x'
+                               },
+                              {'orientation': 'landscape',
+                               'idiom': 'ipad',
                                'extent': 'full-screen',
-                               'scale': '1x'},
-                              {'idiom': 'ipad',
                                'minimum-system-version': '7.0',
-                               'orientation': 'portrait',
+                               'filename': 'Default-Landscape~ipad.png',
+                               'scale': '1x'
+                               },
+                              {'orientation': 'portrait',
+                               'idiom': 'ipad',
                                'extent': 'full-screen',
-                               'scale': '2x'},
-                              {'idiom': 'ipad',
                                'minimum-system-version': '7.0',
-                               'orientation': 'landscape',
+                               'filename': 'Default-700-Portrait@2x~ipad.png',
+                               'scale': '2x'
+                               },
+                              {'orientation': 'landscape',
+                               'idiom': 'ipad',
                                'extent': 'full-screen',
-                               'scale': '2x'},
-                              {'idiom': 'iphone',
-                               'scale': '1x',
-                               'orientation': 'portrait',
-                               'extent': 'full-screen'},
-                              {'idiom': 'iphone',
-                               'scale': '2x',
-                               'orientation': 'portrait',
-                               'extent': 'full-screen'},
-                              {'idiom': 'iphone',
-                               'scale': '2x',
-                               'orientation': 'portrait',
-                               'extent': 'full-screen',
-                               'subtype': 'retina4'},
-                              {'idiom': 'ipad',
-                               'scale': '1x',
-                               'orientation': 'portrait',
-                               'extent': 'to-status-bar'},
-                              {'idiom': 'ipad',
-                               'scale': '1x',
-                               'orientation': 'portrait',
-                               'extent': 'full-screen'},
-                              {'idiom': 'ipad',
-                               'scale': '1x',
-                               'orientation': 'landscape',
-                               'extent': 'to-status-bar'},
-                              {'idiom': 'ipad',
-                               'scale': '1x',
-                               'orientation': 'landscape',
-                               'extent': 'full-screen'},
-                              {'idiom': 'ipad',
-                               'scale': '2x',
-                               'orientation': 'portrait',
-                               'extent': 'to-status-bar'},
-                              {'idiom': 'ipad',
-                               'scale': '2x',
-                               'orientation': 'portrait',
-                               'extent': 'full-screen'},
-                              {'idiom': 'ipad',
-                               'scale': '2x',
-                               'orientation': 'landscape',
-                               'extent': 'to-status-bar'},
-                              {'idiom': 'ipad',
-                               'scale': '2x',
-                               'orientation': 'landscape',
-                               'extent': 'full-screen'}]}
+                               'minimum-system-version': '7.0',
+                               'filename': 'Default-Landscape@2x~ipad.png',
+                               'scale': '2x'
+                               }]}
 
 
 def _generate_icns(imageset_path):
@@ -303,6 +277,10 @@ def _modify_config_file_(type, all_contents, image_path, lookfor_image_size,
             def find_image(image_contents, expected_image_size,
                            expected_image_scale):
                 for image_content in image_contents:
+                    image_idiom = image_content.get('idiom', '').lower()
+                    if image_idiom != 'ipad' and\
+                       '~ipad' in image_name.lower():
+                        continue
                     image_scale = image_content.get('scale', '1x')
                     image_scale = image_scale.lower().rstrip('x')
                     image_size = image_content.get('size', None)
@@ -408,243 +386,269 @@ def _save_configs_(to_object, contents):
                 f.write(value)
 
 
-_sizes_ = {'icon': {'ios': {'AppIcon.appiconset/Icon-29': (29, 29, 1),
-                            'AppIcon.appiconset/Icon-29@2x':
-                            (29, 29, 2),
-                            'AppIcon.appiconset/Icon-29@3x':
-                            (29, 29, 3),
-                            'AppIcon.appiconset/Icon-40': (40, 40, 1),
-                            'AppIcon.appiconset/Icon-40@2x':
-                            (40, 40, 2),
-                            'AppIcon.appiconset/Icon-40@3x':
-                            (40, 40, 3),
-                            'AppIcon.appiconset/Icon-60@2x':
-                            (60, 60, 2),
-                            'AppIcon.appiconset/Icon-60@3x':
-                            (60, 60, 3),
-                            'AppIcon.appiconset/Icon-76': (76, 76, 1),
-                            'AppIcon.appiconset/Icon-76@2x':
-                            (76, 76, 2),
-                            'iTunesArtwork': (512, 512, 1),
-                            'iTunesArtwork@2x': (512, 512, 2)},
-                    'android': {'drawable-ldpi/ic_launcher': (48, 48, 0.75),
-                                'drawable-mdpi/ic_launcher': (48, 48, 1),
-                                'drawable-hdpi/ic_launcher': (48, 48, 1.5),
-                                'drawable-xhdpi/ic_launcher':
-                                (48, 48, 2),
-                                'drawable-xxhdpi/ic_launcher':
-                                (48, 48, 3),
-                                'drawable-xxxhdpi/ic_launcher':
-                                (48, 48, 4),
-                                'playstore': (512, 512, 1)},
-                    'windowsphone': {'AppBar': (48, 48, 1),
-                                     'ApplicationIcon': (90, 90, 1),
-                                     'LockIcon': (38, 38, 1),
-                                     'TileSmall': (110, 110, 1),
-                                     'TileMedium': (202, 202, 1),
-                                     'FlipTileSmall': (159, 159, 1),
-                                     'FlipTileMedium': (336, 336, 1),
-                                     'FlipTileLarge': (691, 336, 1),
-                                     'TileSmallBest': (70, 110, 1),
-                                     'TileMediumBest': (130, 202, 1),
-                                     'Lens-Screen-WVGA': (173, 173, 1),
-                                     'Lens-Screen-720p': (259, 259, 1),
-                                     'Lens-Screen-WXGA': (277, 277, 1),
-                                     'FileHandlerSmall': (33, 33, 1),
-                                     'FileHandlerMedium': (69, 69, 1),
-                                     'FileHandlerLarge': (179, 179, 1),
-                                     'Store': (300, 300, 1)},
-                    'blackberry': {'icon-90': (90, 90, 1),
-                                   'icon-96': (96, 96, 1),
-                                   'icon-110': (110, 110, 1),
-                                   'icon-114': (114, 114, 1)},
-                    'chromestore': {'icon16': (16, 16, 1),
-                                    'icon48': (48, 48, 1),
-                                    'icon128': (128, 128, 1)},
-                    'osx': {'AppIcon.iconset/icon_16x16': (16, 16, 1),
-                            'AppIcon.iconset/icon_16x16@2x': (16, 16, 2),
-                            'AppIcon.iconset/icon_32x32': (32, 32, 1),
-                            'AppIcon.iconset/icon_32x32@2x': (32, 32, 2),
-                            'AppIcon.iconset/icon_128x128': (128, 128, 1),
-                            'AppIcon.iconset/icon_128x128@2x':
-                            (128, 128, 2),
-                            'AppIcon.iconset/icon_256x256': (256, 256, 1),
-                            'AppIcon.iconset/icon_256x256@2x':
-                            (256, 256, 2),
-                            'AppIcon.iconset/icon_512x512': (512, 512, 1),
-                            'AppIcon.iconset/icon_512x512@2x':
-                            (512, 512, 2)},
-                    'windows': {'icon.ico': (256, 256, 1)}},
-           'launch': {'ios': {'LaunchImage.launchimage/' +
-                              'Default-To-Status-Bar-Portrait~ipad':
-                              (768, 1004, 1),
-                              'LaunchImage.launchimage/' +
-                              'Default-To-Status-Bar-Portrait@2x~ipad':
-                              (768, 1004, 2),
-                              'LaunchImage.launchimage/' +
-                              'Default-Portrait~ipad':
-                              (768, 1024, 1),
-                              'LaunchImage.launchimage/' +
-                              'Default-Portrait@2x~ipad':
-                              (768, 1024, 2),
-                              'LaunchImage.launchimage/' +
-                              'Default-To-Status-Bar-Landscape~ipad':
-                              (1024, 748, 1),
-                              'LaunchImage.launchimage/' +
-                              'Default-To-Status-Bar-Landscape@2x~ipad':
-                              (1024, 748, 2),
-                              'LaunchImage.launchimage/' +
-                              'Default-Landscape~ipad':
-                              (1024, 768, 1),
-                              'LaunchImage.launchimage/' +
-                              'Default-Landscape@2x~ipad':
-                              (1024, 768, 2),
-                              'LaunchImage.launchimage/' +
-                              'Default-700-Portrait~ipad':
-                              (768, 1024, 1, 7.0),
-                              'LaunchImage.launchimage/' +
-                              'Default-700-Portrait@2x~ipad':
-                              (768, 1024, 2, 7.0),
-                              'LaunchImage.launchimage/' +
-                              'Default-700-Landscape~ipad':
-                              (1024, 768, 1, 7.0),
-                              'LaunchImage.launchimage/' +
-                              'Default-700-Landscape@2x~ipad':
-                              (1024, 768, 2, 7.0),
-                              'LaunchImage.launchimage/' +
-                              'Default':
-                              (320, 480, 1),
-                              'LaunchImage.launchimage/' +
-                              'Default@2x':
-                              (320, 480, 2),
-                              'LaunchImage.launchimage/' +
-                              'Default-700@2x':
-                              (320, 480, 2, 7.0),
-                              'LaunchImage.launchimage/' +
-                              'Default-568h@2x':
-                              (320, 568, 2),
-                              'LaunchImage.launchimage/' +
-                              'Default-700-568h@2x':
-                              (320, 568, 2, 7.0),
-                              'LaunchImage.launchimage/' +
-                              'Default-800-667h':
-                              (375, 667, 2, 8.0),
-                              'LaunchImage.launchimage/' +
-                              'Default-800-Portrait-736h':
-                              (414, 736, 3, 8.0),
-                              'LaunchImage.launchimage/' +
-                              'Default-800-Landscape-736h':
-                              (736, 414, 3, 8.0)},
-                      'android': {'drawable-ldpi/splash':
-                                  (320, 480, 0.75),
-                                  'drawable-mdpi/splash': (320, 480, 1),
-                                  'drawable-hdpi/splash': (320, 480, 1.5),
-                                  'drawable-xhdpi/splash': (320, 480, 2),
-                                  'drawable-xxhdpi/splash':
-                                  (320, 480, 3),
-                                  'drawable-xxxhdpi/splash':
-                                  (320, 480, 4),
-                                  'drawable-ldpi/splash-landscape':
-                                  (480, 320, 0.75),
-                                  'drawable-mdpi/splash-landscape':
-                                  (480, 320, 1),
-                                  'drawable-hdpi/splash-landscape':
-                                  (480, 320, 1.5),
-                                  'drawable-xhdpi/splash-landscape':
-                                  (480, 320, 2),
-                                  'drawable-xxhdpi/splash-landscape':
-                                  (480, 320, 3),
-                                  'drawable-xxxhdpi/splash':
-                                  (480, 320, 4)}},
-           'toolbar': {'ios': {'{filename}.imageset/{filename}':
-                               (22, None, 1),
-                               '{filename}.imageset/{filename}@2x':
-                               (22, None, 2),
-                               '{filename}.imageset/{filename}@3x':
-                               (22, None, 3)},
-                       'android': {'drawable-ldpi/{filename}':
-                                   (24, 24, 0.75),
-                                   'drawable-mdpi/{filename}':
-                                   (24, 24, 1),
-                                   'drawable-hdpi/{filename}':
-                                   (24, 24, 1.5),
-                                   'drawable-xhdpi/{filename}':
-                                   (24, 24, 2),
-                                   'drawable-xxhdpi/{filename}':
-                                   (24, 24, 3),
-                                   'drawable-xxxhdpi/{filename}':
-                                   (24, 24, 4),
-                                   'drawable-ldpi/{filename}-small':
-                                   (16, 16, 0.75),
-                                   'drawable-mdpi/{filename}-small':
-                                   (16, 16, 1),
-                                   'drawable-hdpi/{filename}-small':
-                                   (16, 16, 1.5),
-                                   'drawable-xhdpi/{filename}-small':
-                                   (16, 16, 2),
-                                   'drawable-xxhdpi/{filename}-small':
-                                   (16, 16, 3),
-                                   'drawable-xxxhdpi/{filename}-small':
-                                   (16, 16, 4)}},
-           'tab': {'ios': {'{filename}.imageset/{filename}':
-                           (25, None, 1),
-                           '{filename}.imageset/{filename}@2x':
-                           (25, None, 2),
-                           '{filename}.imageset/{filename}@3x':
-                           (25, None, 3)},
-                   'android': {'drawable-ldpi/{filename}':
-                               (24, 24, 0.75),
-                               'drawable-mdpi/{filename}':
-                               (24, 24, 1),
-                               'drawable-hdpi/{filename}':
-                               (24, 24, 1.5),
-                               'drawable-xhdpi/{filename}':
-                               (24, 24, 2),
-                               'drawable-xxhdpi/{filename}':
-                               (24, 24, 3),
-                               'drawable-xxxhdpi/{filename}':
-                               (24, 24, 4)}},
-           'notification': {'android': {'drawable-ldpi/{filename}':
-                                        (22, 22, 0.75),
-                                        'drawable-mdpi/{filename}':
-                                        (22, 22, 1),
-                                        'drawable-hdpi/{filename}':
-                                        (22, 22, 1.5),
-                                        'drawable-xhdpi/{filename}':
-                                        (22, 22, 2),
-                                        'drawable-xxhdpi/{filename}':
-                                        (22, 22, 3),
-                                        'drawable-xxxhdpi/{filename}':
-                                        (22, 22, 4)}},
-           'favicon': {'ios': {'apple-touch-icon-60x60': (60, 60, 1),
-                               'apple-touch-icon-120x120': (60, 60, 2),
-                               'apple-touch-icon-180x180': (60, 60, 3),
-                               'apple-touch-icon-76x76': (76, 76, 1),
-                               'apple-touch-icon-152x152': (76, 76, 2)},
-                       'web': {'favicon-16': (16, 16, 1),
-                               'favicon-24': (24, 24, 1),
-                               'favicon-32': (32, 32, 1),
-                               'favicon-64': (64, 64, 1),
-                               'favicon-160': (160, 160, 1),
-                               'favicon-196': (196, 196, 1),
-                               'favicon.ico': (256, 256, 1)},
-                       'googletv': {'favicon-96': (96, 96, 1)},
-                       'windows8': {'pinned': (144, 144, 1)}},
-           'image': {'ios': {'{filename}.imageset/{filename}':
-                             (None, None, 1),
-                             '{filename}.imageset/{filename}@2x':
-                             (None, None, 2),
-                             '{filename}.imageset/{filename}@3x':
-                             (None, None, 3)},
-                     'android': {'drawable-ldpi/{filename}':
-                                 (None, None, 0.75),
-                                 'drawable-mdpi/{filename}': (None, None, 1),
-                                 'drawable-hdpi/{filename}': (None, None, 1.5),
-                                 'drawable-xhdpi/{filename}': (None, None, 2),
-                                 'drawable-xxhdpi/{filename}': (None, None, 3),
-                                 'drawable-xxxhdpi/{filename}':
-                                 (None, None, 4)}
-                     }}
+_sizes_ = {'icon': OrderedDict([('ios', {'AppIcon.appiconset/Icon-29~iPad':
+                                         (29, 29, 1),
+                                         'AppIcon.appiconset/Icon-29@2x~iPad':
+                                         (29, 29, 2),
+                                         'AppIcon.appiconset/Icon-29@3x':
+                                         (29, 29, 3),
+                                         'AppIcon.appiconset/Icon-40@2x':
+                                         (40, 40, 2),
+                                         'AppIcon.appiconset/Icon-40~iPad':
+                                         (40, 40, 1),
+                                         'AppIcon.appiconset/Icon-40@2x~iPad':
+                                         (40, 40, 2),
+                                         'AppIcon.appiconset/Icon-40@3x':
+                                         (40, 40, 3),
+                                         'AppIcon.appiconset/Icon-60@2x':
+                                         (60, 60, 2),
+                                         'AppIcon.appiconset/Icon-60@3x':
+                                         (60, 60, 3),
+                                         'AppIcon.appiconset/Icon-76~iPad':
+                                         (76, 76, 1),
+                                         'AppIcon.appiconset/Icon-76@2x~iPad':
+                                         (76, 76, 2),
+                                         'AppIcon.appiconset/Icon-120':
+                                         (120, 120, 1),
+                                         'iTunesArtwork': (512, 512, 1),
+                                         'iTunesArtwork@2x': (512, 512, 2)}),
+                                ('android', {'drawable-ldpi/ic_launcher':
+                                             (48, 48, 0.75),
+                                             'drawable-mdpi/ic_launcher':
+                                             (48, 48, 1),
+                                             'drawable-hdpi/ic_launcher':
+                                             (48, 48, 1.5),
+                                             'drawable-xhdpi/ic_launcher':
+                                             (48, 48, 2),
+                                             'drawable-xxhdpi/ic_launcher':
+                                             (48, 48, 3),
+                                             'drawable-xxxhdpi/ic_launcher':
+                                             (48, 48, 4),
+                                             'playstore': (512, 512, 1)}),
+                                ('windowsphone', {'AppBar': (48, 48, 1),
+                                                  'ApplicationIcon':
+                                                  (90, 90, 1),
+                                                  'LockIcon': (38, 38, 1),
+                                                  'TileSmall': (110, 110, 1),
+                                                  'TileMedium': (202, 202, 1),
+                                                  'FlipTileSmall':
+                                                  (159, 159, 1),
+                                                  'FlipTileMedium':
+                                                  (336, 336, 1),
+                                                  'FlipTileLarge':
+                                                  (691, 336, 1),
+                                                  'TileSmallBest':
+                                                  (70, 110, 1),
+                                                  'TileMediumBest':
+                                                  (130, 202, 1),
+                                                  'Lens-Screen-WVGA':
+                                                  (173, 173, 1),
+                                                  'Lens-Screen-720p':
+                                                  (259, 259, 1),
+                                                  'Lens-Screen-WXGA':
+                                                  (277, 277, 1),
+                                                  'FileHandlerSmall':
+                                                  (33, 33, 1),
+                                                  'FileHandlerMedium':
+                                                  (69, 69, 1),
+                                                  'FileHandlerLarge':
+                                                  (179, 179, 1),
+                                                  'Store': (300, 300, 1)}),
+                                ('blackberry', {'icon-90': (90, 90, 1),
+                                                'icon-96': (96, 96, 1),
+                                                'icon-110': (110, 110, 1),
+                                                'icon-114': (114, 114, 1)}),
+                                ('chromestore', {'icon16': (16, 16, 1),
+                                                 'icon48': (48, 48, 1),
+                                                 'icon128': (128, 128, 1)}),
+                                ('osx', {'AppIcon.iconset/icon_16x16':
+                                         (16, 16, 1),
+                                         'AppIcon.iconset/icon_16x16@2x':
+                                         (16, 16, 2),
+                                         'AppIcon.iconset/icon_32x32':
+                                         (32, 32, 1),
+                                         'AppIcon.iconset/icon_32x32@2x':
+                                         (32, 32, 2),
+                                         'AppIcon.iconset/icon_128x128':
+                                         (128, 128, 1),
+                                         'AppIcon.iconset/icon_128x128@2x':
+                                         (128, 128, 2),
+                                         'AppIcon.iconset/icon_256x256':
+                                         (256, 256, 1),
+                                         'AppIcon.iconset/icon_256x256@2x':
+                                         (256, 256, 2),
+                                         'AppIcon.iconset/icon_512x512':
+                                         (512, 512, 1),
+                                         'AppIcon.iconset/icon_512x512@2x':
+                                         (512, 512, 2)}),
+                               ('windows', {'icon.ico': (256, 256, 1)})]),
+           'launch': OrderedDict([('ios', {'LaunchImage.launchimage/' +
+                                          'Default-800-Portrait-736h':
+                                          (414, 736, 3, 8.0),
+                                          'LaunchImage.launchimage/' +
+                                          'Default-800-667h':
+                                          (375, 667, 2, 8.0),
+                                          'LaunchImage.launchimage/' +
+                                          'Default-800-Landscape-736h':
+                                          (736, 414, 3, 8.0),
+                                          'LaunchImage.launchimage/' +
+                                          'Default@2x':
+                                          (320, 480, 2),
+                                          'LaunchImage.launchimage/' +
+                                          'Default-700-568h@2x':
+                                          (320, 568, 2, 7.0),
+                                          'LaunchImage.launchimage/' +
+                                          'Default-700-Portrait~ipad':
+                                          (768, 1024, 1, 7.0),
+                                          'LaunchImage.launchimage/' +
+                                          'Default-700-Portrait@2x~ipad':
+                                          (768, 1024, 2, 7.0),
+                                          'LaunchImage.launchimage/' +
+                                          'Default-Landscape~ipad':
+                                          (1024, 768, 1),
+                                          'LaunchImage.launchimage/' +
+                                          'Default-Landscape@2x~ipad':
+                                          (1024, 768, 2)}),
+                                  ('android', {'drawable-ldpi/splash':
+                                               (320, 480, 0.75),
+                                               'drawable-mdpi/splash':
+                                               (320, 480, 1),
+                                               'drawable-hdpi/splash':
+                                               (320, 480, 1.5),
+                                               'drawable-xhdpi/splash':
+                                               (320, 480, 2),
+                                               'drawable-xxhdpi/splash':
+                                               (320, 480, 3),
+                                               'drawable-xxxhdpi/splash':
+                                               (320, 480, 4),
+                                               'drawable-ldpi/' +
+                                               'splash-landscape':
+                                               (480, 320, 0.75),
+                                               'drawable-mdpi/' +
+                                               'splash-landscape':
+                                               (480, 320, 1),
+                                               'drawable-hdpi/' +
+                                               'splash-landscape':
+                                               (480, 320, 1.5),
+                                               'drawable-xhdpi/' +
+                                               'splash-landscape':
+                                               (480, 320, 2),
+                                               'drawable-xxhdpi/' +
+                                               'splash-landscape':
+                                               (480, 320, 3),
+                                               'drawable-xxxhdpi/splash':
+                                               (480, 320, 4)})]),
+           'toolbar': OrderedDict([('ios', {'{filename}.imageset/{filename}':
+                                            (22, None, 1),
+                                            '{filename}.imageset/' +
+                                            '{filename}@2x':
+                                            (22, None, 2),
+                                            '{filename}.imageset/' +
+                                            '{filename}@3x':
+                                            (22, None, 3)}),
+                                   ('android', {'drawable-ldpi/{filename}':
+                                                (24, 24, 0.75),
+                                                'drawable-mdpi/{filename}':
+                                                (24, 24, 1),
+                                                'drawable-hdpi/{filename}':
+                                                (24, 24, 1.5),
+                                                'drawable-xhdpi/{filename}':
+                                                (24, 24, 2),
+                                                'drawable-xxhdpi/{filename}':
+                                                (24, 24, 3),
+                                                'drawable-xxxhdpi/{filename}':
+                                                (24, 24, 4),
+                                                'drawable-ldpi/' +
+                                                '{filename}-small':
+                                                (16, 16, 0.75),
+                                                'drawable-mdpi/' +
+                                                '{filename}-small':
+                                                (16, 16, 1),
+                                                'drawable-hdpi/' +
+                                                '{filename}-small':
+                                                (16, 16, 1.5),
+                                                'drawable-xhdpi/' +
+                                                '{filename}-small':
+                                                (16, 16, 2),
+                                                'drawable-xxhdpi/' +
+                                                '{filename}-small':
+                                                (16, 16, 3),
+                                                'drawable-xxxhdpi/' +
+                                                '{filename}-small':
+                                                (16, 16, 4)})]),
+           'tab': OrderedDict([('ios', {'{filename}.imageset/{filename}':
+                                        (25, None, 1),
+                                        '{filename}.imageset/{filename}@2x':
+                                        (25, None, 2),
+                                        '{filename}.imageset/{filename}@3x':
+                                        (25, None, 3)}),
+                               ('android', {'drawable-ldpi/{filename}':
+                                            (24, 24, 0.75),
+                                            'drawable-mdpi/{filename}':
+                                            (24, 24, 1),
+                                            'drawable-hdpi/{filename}':
+                                            (24, 24, 1.5),
+                                            'drawable-xhdpi/{filename}':
+                                            (24, 24, 2),
+                                            'drawable-xxhdpi/{filename}':
+                                            (24, 24, 3),
+                                            'drawable-xxxhdpi/{filename}':
+                                            (24, 24, 4)})]),
+           'notification': OrderedDict([('android', {'drawable-ldpi/' +
+                                                     'filename}':
+                                                     (22, 22, 0.75),
+                                                     'drawable-mdpi/' +
+                                                     '{filename}':
+                                                     (22, 22, 1),
+                                                     'drawable-hdpi/' +
+                                                     '{filename}':
+                                                     (22, 22, 1.5),
+                                                     'drawable-xhdpi/' +
+                                                     '{filename}':
+                                                     (22, 22, 2),
+                                                     'drawable-xxhdpi/' +
+                                                     '{filename}':
+                                                     (22, 22, 3),
+                                                     'drawable-xxxhdpi/' +
+                                                     '{filename}':
+                                                     (22, 22, 4)})]),
+           'favicon': OrderedDict([('ios', {'apple-touch-icon-60x60':
+                                            (60, 60, 1),
+                                            'apple-touch-icon-120x120':
+                                            (60, 60, 2),
+                                            'apple-touch-icon-180x180':
+                                            (60, 60, 3),
+                                            'apple-touch-icon-76x76':
+                                            (76, 76, 1),
+                                            'apple-touch-icon-152x152':
+                                            (76, 76, 2)}),
+                                   ('web', {'favicon-16': (16, 16, 1),
+                                            'favicon-24': (24, 24, 1),
+                                            'favicon-32': (32, 32, 1),
+                                            'favicon-64': (64, 64, 1),
+                                            'favicon-160': (160, 160, 1),
+                                            'favicon-196': (196, 196, 1),
+                                            'favicon.ico': (256, 256, 1)}),
+                                   ('googletv', {'favicon-96': (96, 96, 1)}),
+                                   ('windows8', {'pinned': (144, 144, 1)})]),
+           'image': OrderedDict([('ios', {'{filename}.imageset/{filename}':
+                                          (None, None, 1),
+                                          '{filename}.imageset/{filename}@2x':
+                                          (None, None, 2),
+                                          '{filename}.imageset/{filename}@3x':
+                                          (None, None, 3)}),
+                                 ('android', {'drawable-ldpi/{filename}':
+                                              (None, None, 0.75),
+                                              'drawable-mdpi/{filename}':
+                                              (None, None, 1),
+                                              'drawable-hdpi/{filename}':
+                                              (None, None, 1.5),
+                                              'drawable-xhdpi/{filename}':
+                                              (None, None, 2),
+                                              'drawable-xxhdpi/{filename}':
+                                              (None, None, 3),
+                                              'drawable-xxxhdpi/{filename}':
+                                              (None, None, 4)})])}
 
 _device_names_ = {'ios': 'iOS', 'osx': 'OS X',
                   'googletv': 'Google TV', 'windows8': 'Widnows 8',
@@ -659,8 +663,8 @@ def device_name(device):
     return device[0].upper() + device[1:]
 
 
-def supported_devices(type):
-    return _sizes_.get(type, {}).keys()
+def supported_devices(icon_type):
+    return _sizes_.get(icon_type, {}).keys()
 
 
 def supported_types():

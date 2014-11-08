@@ -129,6 +129,7 @@ def _main_():
     window = tk.Tk()
     window.resizable(0, 0)
     window.title('Drop Icon Below')
+    window.attributes('-topmost', 1)
     screenwidth = window.winfo_screenwidth()
     screenheight = window.winfo_screenheight()
     width = 515
@@ -197,9 +198,16 @@ def _main_():
     def on_icon_type_changed(*args):
         raw_icon_type = icon_type.get()
         devices = supported_devices(raw_icon_type)
+        selected_devices = set()
+        for (device_var, device, _) in device_types:
+            if device_var.get():
+                selected_devices.add(device)
         del device_types[:]
+        toggle_icon_types.set(False)
         for device in devices:
-            device_types.append((tk.BooleanVar(window, True), device,
+            device_types.append((tk.BooleanVar(window,
+                                               device in selected_devices),
+                                device,
                                 device_name(device)))
         devices_frame = tk.LabelFrame(frame, bg=background_color,
                                       text='Devices')
@@ -208,7 +216,6 @@ def _main_():
                            variable=device_type[0],
                            text=device_type[2]).pack(anchor='w')
         if len(device_types) > 1:
-            toggle_icon_types.set(True)
             tk.Checkbutton(devices_frame, bg=background_color,
                            variable=toggle_icon_types,
                            text='All').pack(anchor='w')
@@ -317,32 +324,32 @@ def _main_():
                 askopenfilename(title='Select your icon',
                                 filetypes=[('Images', '.png .jpg .jpeg .bmp')])
         if icon_path:
-            try:
-                image = Image.open(icon_path)
-            except Exception:
-                return
-
-            image_name, _ = os.path.splitext(os.path.basename(icon_path))
-            if output_path.get():
-                to_output_path = output_path.get()
-            else:
-                to_output_path = os.path.dirname(icon_path)
-            to_icon_type = icon_type.get()
             to_devices = []
             for device_type in device_types:
                 if device_type[0].get():
                     to_devices.append(device_type[1])
+            if to_devices:
+                try:
+                    image = Image.open(icon_path)
+                except Exception:
+                    return
 
-            to_baseline = baseline.get()
-            progressbar.add_task(target=make_images,
-                                 args=(image, image_name,
-                                       to_output_path,
-                                       to_icon_type,
-                                       to_devices, to_baseline))
+                image_name, _ = os.path.splitext(os.path.basename(icon_path))
+                if output_path.get():
+                    to_output_path = output_path.get()
+                else:
+                    to_output_path = os.path.dirname(icon_path)
+                to_icon_type = icon_type.get()
+                to_baseline = baseline.get()
+                progressbar.add_task(target=make_images,
+                                     args=(image, image_name,
+                                           to_output_path,
+                                           to_icon_type,
+                                           to_devices, to_baseline))
 
-            def callback():
-                _show_in_finder_(to_output_path)
-            progressbar.start(callback)
+                def callback():
+                    _show_in_finder_(to_output_path)
+                progressbar.start(callback)
         window.is_picking_file = False
     drop_button.bind('<ButtonRelease-1>', on_select_icon)
     dnd = TkDND(window)
