@@ -278,8 +278,10 @@ def _modify_config_file_(type, all_contents, image_path, lookfor_image_size,
                            expected_image_scale):
                 for image_content in image_contents:
                     image_idiom = image_content.get('idiom', '').lower()
-                    if image_idiom != 'ipad' and\
-                       '~ipad' in image_name.lower():
+                    if (image_idiom == 'ipad' and
+                        '~ipad' not in image_name.lower()) or\
+                        (image_idiom != 'ipad' and
+                         '~ipad' in image_name.lower()):
                         continue
                     image_scale = image_content.get('scale', '1x')
                     image_scale = image_scale.lower().rstrip('x')
@@ -389,6 +391,8 @@ def _save_configs_(to_object, contents):
 _sizes_ = {'icon': OrderedDict([('ios', {'AppIcon.appiconset/Icon-29~iPad':
                                          (29, 29, 1),
                                          'AppIcon.appiconset/Icon-29@2x~iPad':
+                                         (29, 29, 2),
+                                         'AppIcon.appiconset/Icon-29@2x':
                                          (29, 29, 2),
                                          'AppIcon.appiconset/Icon-29@3x':
                                          (29, 29, 3),
@@ -595,22 +599,22 @@ _sizes_ = {'icon': OrderedDict([('ios', {'AppIcon.appiconset/Icon-29~iPad':
                                             'drawable-xxxhdpi/{filename}':
                                             (24, 24, 4)})]),
            'notification': OrderedDict([('android', {'drawable-ldpi/' +
-                                                     'filename}':
+                                                     'notification':
                                                      (22, 22, 0.75),
                                                      'drawable-mdpi/' +
-                                                     '{filename}':
+                                                     'notification':
                                                      (22, 22, 1),
                                                      'drawable-hdpi/' +
-                                                     '{filename}':
+                                                     'notification':
                                                      (22, 22, 1.5),
                                                      'drawable-xhdpi/' +
-                                                     '{filename}':
+                                                     'notification':
                                                      (22, 22, 2),
                                                      'drawable-xxhdpi/' +
-                                                     '{filename}':
+                                                     'notification':
                                                      (22, 22, 3),
                                                      'drawable-xxxhdpi/' +
-                                                     '{filename}':
+                                                     'notification':
                                                      (22, 22, 4)})]),
            'favicon': OrderedDict([('ios', {'apple-touch-icon-60x60':
                                             (60, 60, 1),
