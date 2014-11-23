@@ -26,10 +26,10 @@ def _load_tkdnd(master):
         basis = sys.executable
     else:
         basis = __file__
-    tkdndlib = os.path.join(os.path.dirname(basis), 'tkdnd', sys.platform)
-    tkdndlib = os.environ.get('TKDND_LIBRARY', tkdndlib)
-    if tkdndlib:
-        master.tk.eval('global auto_path; lappend auto_path {%s}' % tkdndlib)
+    tkdndlib = tkdndlib = os.environ.get('TKDND_LIBRARY', None)
+    if not tkdndlib or not os.path.exists(tkdndlib):
+        tkdndlib = os.path.join(os.path.dirname(basis), 'tkdnd', sys.platform)
+    master.tk.eval('global auto_path; lappend auto_path {%s}' % tkdndlib)
     master.tk.eval('package require tkdnd')
     master._tkdnd_loaded = True
 
