@@ -16,7 +16,7 @@ generate icons of all sizes and config file (e.g. Contents.json) required device
 
 ### Download
 
-* [1.0](https://github.com/exherb/icons/releases/tag/1.0)
+* [1.0.1](https://github.com/exherb/icons/releases/tag/1.0.1)
 
 ![screenshot](screenshots/icons_gui.png)
 
