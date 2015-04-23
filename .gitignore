@@ -80,6 +80,7 @@ docs/_build/
 # PyBuilder
 target/
 
+.eggs
 *.asar
 
 web/icons

@@ -487,32 +487,32 @@ _sizes_ = {'icon': OrderedDict([('ios', {'AppIcon.appiconset/Icon-29~iPad':
                                          (512, 512, 2)}),
                                ('windows', {'icon.ico': (256, 256, 1)})]),
            'launch': OrderedDict([('ios', {'LaunchImage.launchimage/' +
-                                          'Default-800-Portrait-736h':
-                                          (414, 736, 3, 8.0),
-                                          'LaunchImage.launchimage/' +
-                                          'Default-800-667h':
-                                          (375, 667, 2, 8.0),
-                                          'LaunchImage.launchimage/' +
-                                          'Default-800-Landscape-736h':
-                                          (736, 414, 3, 8.0),
-                                          'LaunchImage.launchimage/' +
-                                          'Default@2x':
-                                          (320, 480, 2),
-                                          'LaunchImage.launchimage/' +
-                                          'Default-700-568h@2x':
-                                          (320, 568, 2, 7.0),
-                                          'LaunchImage.launchimage/' +
-                                          'Default-700-Portrait~ipad':
-                                          (768, 1024, 1, 7.0),
-                                          'LaunchImage.launchimage/' +
-                                          'Default-700-Portrait@2x~ipad':
-                                          (768, 1024, 2, 7.0),
-                                          'LaunchImage.launchimage/' +
-                                          'Default-Landscape~ipad':
-                                          (1024, 768, 1),
-                                          'LaunchImage.launchimage/' +
-                                          'Default-Landscape@2x~ipad':
-                                          (1024, 768, 2)}),
+                                           'Default-800-Portrait-736h':
+                                           (414, 736, 3, 8.0),
+                                           'LaunchImage.launchimage/' +
+                                           'Default-800-667h':
+                                           (375, 667, 2, 8.0),
+                                           'LaunchImage.launchimage/' +
+                                           'Default-800-Landscape-736h':
+                                           (736, 414, 3, 8.0),
+                                           'LaunchImage.launchimage/' +
+                                           'Default@2x':
+                                           (320, 480, 2),
+                                           'LaunchImage.launchimage/' +
+                                           'Default-700-568h@2x':
+                                           (320, 568, 2, 7.0),
+                                           'LaunchImage.launchimage/' +
+                                           'Default-700-Portrait~ipad':
+                                           (768, 1024, 1, 7.0),
+                                           'LaunchImage.launchimage/' +
+                                           'Default-700-Portrait@2x~ipad':
+                                           (768, 1024, 2, 7.0),
+                                           'LaunchImage.launchimage/' +
+                                           'Default-Landscape~ipad':
+                                           (1024, 768, 1),
+                                           'LaunchImage.launchimage/' +
+                                           'Default-Landscape@2x~ipad':
+                                           (1024, 768, 2)}),
                                   ('android', {'drawable-ldpi/splash':
                                                (320, 480, 0.75),
                                                'drawable-mdpi/splash':
@@ -676,7 +676,7 @@ def supported_types():
 
 
 def make_images(image, image_name, to_object, type,
-                allowed_devices=None, baseline_scale=3):
+                allowed_devices=None, baseline_scale=2):
     original_image_width, original_image_height = image.size
     if type not in _sizes_:
         raise RuntimeError('Error: no such icon type')
@@ -800,8 +800,7 @@ def _main_():
                         dest='icon_type',
                         help='icon type')
     parser.add_argument('--devices', '-d',
-                        default=[],
-                        nargs='+',
+                        default='ios',
                         choices=['ios', 'android'],
                         help='including devices')
     parser.add_argument('--zip', '-z', action='store_const', const=True)
