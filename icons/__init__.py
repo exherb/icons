@@ -676,107 +676,99 @@ def supported_types():
 
 
 def make_images(image, image_name, to_object, type,
-                allowed_devices=None, baseline_scale=2):
+                to_device, baseline_scale=2):
     original_image_width, original_image_height = image.size
     if type not in _sizes_:
         raise RuntimeError('Error: no such icon type')
-    devices = _sizes_[type]
-    if not allowed_devices:
-        allowed_devices = devices.keys()
+    all_devices = _sizes_[type]
+    if not to_device:
+        to_device = all_devices.keys()[0]
+    sizes = all_devices[to_device]
     all_contents = {}
-    for device, sizes in devices.items():
-        if device not in allowed_devices:
-            continue
-        if isinstance(to_object, ZipFile):
-            device_path = device
+    if isinstance(to_object, ZipFile):
+        device_path = to_device
+    else:
+        device_path = to_object
+        if not os.path.exists(device_path):
+            os.makedirs(device_path)
+    widths = [x[0]*x[2] for x in sizes.values()
+              if isinstance(x[0], int)]
+    min_image_width = None
+    if min_image_width:
+        min_image_width = max(widths)
+    if min_image_width:
+        heights = [x[1]*x[2] for x in sizes.values()
+                   if isinstance(x[1], int)]
+        min_image_height = None
+        if heights:
+            min_image_height = max(heights)
+        if min_image_height is None:
+            min_image_height = min_image_width*1.0 /\
+                original_image_width*original_image_height
+        scale = max(min_image_width*1.0/original_image_width,
+                    min_image_height*1.0/original_image_height)
+        crop_image_width = min_image_width/scale
+        crop_image_height = min_image_height/scale
+        if original_image_width > crop_image_width and\
+           original_image_height > crop_image_height:
+            x_offset = (original_image_width - crop_image_width)*0.5
+            y_offset = (original_image_height - crop_image_height)*0.5
+            image = image.crop((x_offset, y_offset,
+                                x_offset + crop_image_width,
+                                y_offset + crop_image_height))
+    for name, size_info in sizes.items():
+        width, height, scale = size_info[:3]
+        if len(size_info) > 3:
+            system_version = size_info[3]
         else:
-            device_path = os.path.join(to_object, device)
-            if not os.path.exists(device_path):
-                os.makedirs(device_path)
-            elif not os.path.isdir(device_path):
-                print('Warning: can\'t make dir {} for {}'.
-                      format(device_path, device))
+            system_version = None
+        if width is None:
+            width = original_image_width*1.0/baseline_scale
+        if height is None:
+            height = width*1.0/original_image_width*original_image_height
+        name = name.replace('{filename}', image_name)
+        image_path = os.path.join(device_path, name)
+        _, ext = os.path.splitext(name)
+        if ext.lower() == '.ico':
+            with open(image_path, 'wb') as f:
+                _save_to_ico(image, f)
+        else:
+            if not ext:
+                image_path = image_path + '.png'
+            if scale > baseline_scale:
+                print(('Warning: {} scale {} is bigger than ' +
+                       'base line scale {}').
+                      format(image_path, scale, baseline_scale))
                 continue
-        if not sizes:
-            continue
-        widths = [x[0]*x[2] for x in sizes.values()
-                  if isinstance(x[0], int)]
-        min_image_width = None
-        if min_image_width:
-            min_image_width = max(widths)
-        if min_image_width:
-            heights = [x[1]*x[2] for x in sizes.values()
-                       if isinstance(x[1], int)]
-            min_image_height = None
-            if heights:
-                min_image_height = max(heights)
-            if min_image_height is None:
-                min_image_height = min_image_width*1.0 /\
-                    original_image_width*original_image_height
-            scale = max(min_image_width*1.0/original_image_width,
-                        min_image_height*1.0/original_image_height)
-            crop_image_width = min_image_width/scale
-            crop_image_height = min_image_height/scale
-            if original_image_width > crop_image_width and\
-               original_image_height > crop_image_height:
-                x_offset = (original_image_width - crop_image_width)*0.5
-                y_offset = (original_image_height - crop_image_height)*0.5
-                image = image.crop((x_offset, y_offset,
-                                    x_offset + crop_image_width,
-                                    y_offset + crop_image_height))
-        for name, size_info in sizes.items():
-            width, height, scale = size_info[:3]
-            if len(size_info) > 3:
-                system_version = size_info[3]
-            else:
-                system_version = None
-            if width is None:
-                width = original_image_width*1.0/baseline_scale
-            if height is None:
-                height = width*1.0/original_image_width*original_image_height
-            name = name.replace('{filename}', image_name)
-            image_path = os.path.join(device_path, name)
-            _, ext = os.path.splitext(name)
-            if ext.lower() == '.ico':
-                with open(image_path, 'wb') as f:
-                    _save_to_ico(image, f)
-            else:
-                if not ext:
-                    image_path = image_path + '.png'
-                if scale > baseline_scale:
-                    print(('Warning: {} scale {} is bigger than ' +
-                           'base line scale {}').
-                          format(image_path, scale, baseline_scale))
+            if not isinstance(to_object, ZipFile):
+                image_dir_path = os.path.dirname(image_path)
+                if not os.path.exists(image_dir_path):
+                    os.makedirs(image_dir_path)
+                elif not os.path.isdir(image_dir_path):
+                    print('Warning: can\'t make dir {} for {}({}x{})'.
+                          format(image_dir_path, image_path, width*scale,
+                                 height*scale))
                     continue
-                if not isinstance(to_object, ZipFile):
-                    image_dir_path = os.path.dirname(image_path)
-                    if not os.path.exists(image_dir_path):
-                        os.makedirs(image_dir_path)
-                    elif not os.path.isdir(image_dir_path):
-                        print('Warning: can\'t make dir {} for {}({}x{})'.
-                              format(image_dir_path, image_path, width*scale,
-                                     height*scale))
-                        continue
-                    if os.path.exists(image_path):
-                        print('Warning: {} is already exists'.
-                              format(image_path))
-                        continue
-                if width > original_image_width or\
-                   height > original_image_height:
-                    print('Warning: {}x{} is too small for {}({}x{})'.
-                          format(original_image_width, original_image_height,
-                                 image_path, width*scale, height*scale))
+                if os.path.exists(image_path):
+                    print('Warning: {} is already exists'.
+                          format(image_path))
                     continue
-                _resize_image_(image, to_object, image_path,
-                               (width*scale, height*scale))
+            if width > original_image_width or\
+               height > original_image_height:
+                print('Warning: {}x{} is too small for {}({}x{})'.
+                      format(original_image_width, original_image_height,
+                             image_path, width*scale, height*scale))
+                continue
+            _resize_image_(image, to_object, image_path,
+                           (width*scale, height*scale))
 
-            for type in _configs_.keys():
-                if type in name:
-                    _modify_config_file_(type, all_contents, image_path,
-                                         (width, height),
-                                         scale,
-                                         system_version)
-                    break
+        for type in _configs_.keys():
+            if type in name:
+                _modify_config_file_(type, all_contents, image_path,
+                                     (width, height),
+                                     scale,
+                                     system_version)
+                break
     _save_configs_(to_object, all_contents)
 
 
@@ -799,10 +791,10 @@ def _main_():
                         choices=supported_types(),
                         dest='icon_type',
                         help='icon type')
-    parser.add_argument('--devices', '-d',
+    parser.add_argument('--device', '-d',
                         default='ios',
                         choices=['ios', 'android'],
-                        help='including devices')
+                        help='device')
     parser.add_argument('--zip', '-z', action='store_const', const=True)
     args = parser.parse_args()
     if not args.target_path:
@@ -820,10 +812,10 @@ def _main_():
         with closing(ZipFile(args.target_path,
                              "w", ZIP_DEFLATED)) as zip_file:
             make_images(image, image_name, zip_file, args.icon_type,
-                        args.devices, args.baseline)
+                        args.device, args.baseline)
     else:
         make_images(image, image_name, args.target_path, args.icon_type,
-                    args.devices, args.baseline)
+                    args.device, args.baseline)
 
 if __name__ == '__main__':
     _main_()

@@ -156,8 +156,7 @@ def _main_():
     icon_types.append(('notification',
                       'Notification Icon'))
     icon_type = tk.StringVar(window, 'icon')
-
-    device_types = []
+    device_type = tk.StringVar(window, 'device')
 
     baseline = tk.IntVar(window, 3, 'baseline')
 
@@ -187,38 +186,20 @@ def _main_():
                    variable=baseline, value=4,
                    text='4').pack(anchor='w')
 
-    toggle_icon_types = tk.BooleanVar(window, True)
-
-    def on_toggle_icon_types(*args):
-        state = toggle_icon_types.get()
-        for device_type in device_types:
-            device_type[0].set(state)
-    toggle_icon_types.trace('w', on_toggle_icon_types)
-
     def on_icon_type_changed(*args):
         raw_icon_type = icon_type.get()
         devices = supported_devices(raw_icon_type)
-        selected_devices = set()
-        for (device_var, device, _) in device_types:
-            if device_var.get():
-                selected_devices.add(device)
-        del device_types[:]
-        toggle_icon_types.set(False)
-        for device in devices:
-            device_types.append((tk.BooleanVar(window,
-                                               device in selected_devices),
-                                device,
-                                device_name(device)))
+
         devices_frame = tk.LabelFrame(frame, bg=background_color,
                                       text='Devices')
-        for device_type in device_types:
-            tk.Checkbutton(devices_frame, bg=background_color,
-                           variable=device_type[0],
-                           text=device_type[2]).pack(anchor='w')
-        if len(device_types) > 1:
-            tk.Checkbutton(devices_frame, bg=background_color,
-                           variable=toggle_icon_types,
-                           text='All').pack(anchor='w')
+        if device_type.get() not in devices:
+            device_type.set(devices[0])
+        for device in devices:
+            tk.Radiobutton(devices_frame, bg=background_color,
+                           variable=device_type,
+                           value=device,
+                           text=device_name(device)).pack(anchor='w')
+
         for old_frame in frame.grid_slaves(row=1, column=1):
             old_frame.grid_remove()
         devices_frame.grid(row=1, column=1, sticky='nwne', padx=10)
@@ -324,32 +305,27 @@ def _main_():
                 askopenfilename(title='Select your icon',
                                 filetypes=[('Images', '.png .jpg .jpeg .bmp')])
         if icon_path:
-            to_devices = []
-            for device_type in device_types:
-                if device_type[0].get():
-                    to_devices.append(device_type[1])
-            if to_devices:
-                try:
-                    image = Image.open(icon_path)
-                except Exception:
-                    return
+            try:
+                image = Image.open(icon_path)
+            except Exception:
+                return
 
-                image_name, _ = os.path.splitext(os.path.basename(icon_path))
-                if output_path.get():
-                    to_output_path = output_path.get()
-                else:
-                    to_output_path = os.path.dirname(icon_path)
-                to_icon_type = icon_type.get()
-                to_baseline = baseline.get()
-                progressbar.add_task(target=make_images,
-                                     args=(image, image_name,
-                                           to_output_path,
-                                           to_icon_type,
-                                           to_devices, to_baseline))
+            image_name, _ = os.path.splitext(os.path.basename(icon_path))
+            if output_path.get():
+                to_output_path = output_path.get()
+            else:
+                to_output_path = os.path.dirname(icon_path)
+            to_icon_type = icon_type.get()
+            to_baseline = baseline.get()
+            progressbar.add_task(target=make_images,
+                                 args=(image, image_name,
+                                       to_output_path,
+                                       to_icon_type,
+                                       device_type.get(), to_baseline))
 
-                def callback():
-                    _show_in_finder_(to_output_path)
-                progressbar.start(callback)
+            def callback():
+                _show_in_finder_(to_output_path)
+            progressbar.start(callback)
         window.is_picking_file = False
     drop_button.bind('<ButtonRelease-1>', on_select_icon)
     dnd = TkDND(window)

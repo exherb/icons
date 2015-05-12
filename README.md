@@ -25,7 +25,7 @@ just type `pip install icons` in your term.
 
 ```
 icons [--type {launch,notification,image,tab,webclip,toolbar,icon}]
-      [--devices {ios,android} [--zip]
+      [--device {ios,android} [--zip]
       icon_path [-o TARGET_PATH] [--baseline BASELINE]
 # with gui
 icons_gui
@@ -35,7 +35,7 @@ icons_gui
 * target_path(optional) - the target path
 * baseline(optional) - baseline scale. the default is 3, and it's mean the source image is at @3x scale
 * type(optional) - icon type, the default is icon
-* devices(optional) - including only devices, the default is iOS
+* device(optional) - including only devices, the default is iOS
 * --zip(optional) - put icons into a zip file instead of directory
 
 ![screenshot](screenshots/icons_gui.png)
