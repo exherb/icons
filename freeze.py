@@ -18,8 +18,8 @@ if sys.platform == 'darwin':
                             'packages': ['PIL'],
                             'plist': {
                                 'CFBundleName': name,
-                                'CFBundleShortVersionString': '0.1.2',
-                                'CFBundleVersion': '0.1.2',
+                                'CFBundleShortVersionString': '1.1',
+                                'CFBundleVersion': '1.1',
                                 'NSHumanReadableCopyright': '@Herb Brewer 2014'
                                 }
                             }})
