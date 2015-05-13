@@ -2,7 +2,7 @@
 
 generate icons of all sizes and config file (e.g. Contents.json) required devices, inspired by http://makeappicon.com
 
-# Supported Devices
+## Supported Devices
 
 * iOS && Android && Windows Phone
 * OS X - icns (mac only)
@@ -10,6 +10,10 @@ generate icons of all sizes and config file (e.g. Contents.json) required device
 * Favicon - ico && apple-touch-icon
 * Blackberry
 * Chrome Web Store
+
+## Desktop Version
+
+* [0.1.2](https://github.com/exherb/icons/releases/tag/0.1.2)
 
 ## Web version
 
