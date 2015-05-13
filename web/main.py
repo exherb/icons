@@ -33,9 +33,7 @@ class MainPage(webapp2.RequestHandler):
         self.response.write(template.render())
 
     def post(self):
-        image_type = self.request.get('type', 'icon')
-        if image_type not in supported_types():
-            image_type = 'icon'
+        image_type = self.request.get('type', 'image')
         file = StringIO.StringIO(self.request.get('file'))
         zip_file = StringIO.StringIO()
         with closing(ZipFile(zip_file, 'w', ZIP_DEFLATED)) as tmp:

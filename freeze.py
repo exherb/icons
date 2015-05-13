@@ -15,10 +15,11 @@ if sys.platform == 'darwin':
         app=[mainscript],
         options={'py2app': {'argv_emulation': False,
                             'iconfile': 'icos/icon.icns',
+                            'packages': ['PIL'],
                             'plist': {
                                 'CFBundleName': name,
-                                'CFBundleShortVersionString': '1.0.1',
-                                'CFBundleVersion': '1.0.1',
+                                'CFBundleShortVersionString': '0.1.2',
+                                'CFBundleVersion': '0.1.2',
                                 'NSHumanReadableCopyright': '@Herb Brewer 2014'
                                 }
                             }})

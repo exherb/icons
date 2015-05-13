@@ -145,17 +145,17 @@ def _main_():
     output_path = tk.StringVar(window, '')
 
     icon_types = []
+    icon_types.append(('image', 'Icon'))
+    icon_types.append(('tab', 'Tabbar Icon'))
+    icon_types.append(('toolbar',
+                      'Toolbar Icon'))
     icon_types.append(('icon', 'App Icon'))
     icon_types.append(('launch',
                       'App Lauch Image'))
-    icon_types.append(('image', 'Icon'))
-    icon_types.append(('favicon', 'Favicon'))
-    icon_types.append(('toolbar',
-                      'Toolbar Icon'))
-    icon_types.append(('tab', 'Tabbar Icon'))
     icon_types.append(('notification',
                       'Notification Icon'))
-    icon_type = tk.StringVar(window, 'icon')
+    icon_types.append(('favicon', 'Favicon'))
+    icon_type = tk.StringVar(window, 'image')
     device_type = tk.StringVar(window, 'device')
 
     baseline = tk.IntVar(window, 3, 'baseline')
@@ -296,19 +296,23 @@ def _main_():
             return
         window.is_picking_file = True
         if hasattr(event, 'data'):
-            icon_path = event.data.split()[0]
-            _, ext = os.path.splitext(icon_path)
-            if ext.lower() not in ['.png', '.jpg', '.jpeg', '.bmp']:
-                return
+            icon_paths = []
+            input_icon_paths = event.data.split()
+            for icon_path in input_icon_paths:
+                _, ext = os.path.splitext(icon_path)
+                if ext.lower() not in ['.png', '.jpg', '.jpeg', '.bmp']:
+                    continue
+                icon_paths.append(icon_path)
         else:
-            icon_path = filedialog.\
+            icon_paths = filedialog.\
                 askopenfilename(title='Select your icon',
+                                multiple=True,
                                 filetypes=[('Images', '.png .jpg .jpeg .bmp')])
-        if icon_path:
+        for icon_path in icon_paths:
             try:
                 image = Image.open(icon_path)
             except Exception:
-                return
+                continue
 
             image_name, _ = os.path.splitext(os.path.basename(icon_path))
             if output_path.get():
